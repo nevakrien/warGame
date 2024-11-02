@@ -11,7 +11,7 @@
 // Function to initialize soldiers in a small clustered area with varying rotations
 void InitSoldiers(Soldier soldiers[], b2WorldId world) {
     for (int i = 0; i < NUM_SOLDIERS; i++) {
-        float rotation = 0;//i * (PI / 10);  // Different starting angles in radians
+        float rotation = i * (PI / NUM_SOLDIERS);  // Different starting angles in radians
         Vector2 position = {
             380.0f + (i % 5) * SOLDIER_SPACING,  // Horizontal spacing
             280.0f + (i / 5) * SOLDIER_SPACING   // Vertical spacing
