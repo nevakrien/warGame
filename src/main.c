@@ -16,15 +16,12 @@ void InitSoldiers(Soldier soldiers[], b2WorldId world) {
             380.0f + (i % 5) * SOLDIER_SPACING,  // Horizontal spacing
             280.0f + (i / 5) * SOLDIER_SPACING   // Vertical spacing
         };
-        soldiers[i] = Soldier_Create(world, position, rotation, RED);
+        soldiers[i] = Soldier_Create(world, position, rotation, GRAY);
     }
 }
 
 
 int main() {
-    InitWindow(800, 600, "Soldier Simulation with Camera Control");
-    SetTargetFPS(60);
-
     // Initialize Box2D world with zero gravity
     b2WorldDef worldDef = b2DefaultWorldDef();
     worldDef.gravity = (b2Vec2){0.0f, 0.0f};
@@ -33,6 +30,9 @@ int main() {
     // Array of soldiers
     Soldier soldiers[NUM_SOLDIERS];
     InitSoldiers(soldiers, world);
+
+    InitWindow(800, 600, "Soldier Simulation with Camera Control");
+    SetTargetFPS(60);
 
     // Set up a Camera2D for moving and zooming
     Camera2D camera = { 0 };

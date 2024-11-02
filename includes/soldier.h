@@ -10,7 +10,8 @@
 
 typedef struct {
     Color color;
-    b2BodyId body;
+    b2BodyId body;      // Soldier's main body
+    b2BodyId spear;     // Separate body for the spear
 } Soldier;
 
 Soldier Soldier_Create(b2WorldId world, Vector2 position, float rotation, Color color);
