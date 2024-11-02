@@ -4,40 +4,35 @@
 
 #include "soldier.h"
 
-
 static void Soldier_Init(Soldier *soldier, b2WorldId world, Vector2 position, float rotation) {
     // Initialize the body definition
     b2BodyDef bodyDef = b2DefaultBodyDef();
     bodyDef.type = b2_dynamicBody;
     bodyDef.position = (b2Vec2){ position.x, position.y };
 
-    // Create the body in the Box2D world
-    soldier->body = b2CreateBody(world, &bodyDef);
-
-    // Circle Shape for Body
-    b2Circle circleShape = {0};
-    circleShape.radius = SOLDIER_RADIUS;
     b2ShapeDef shapeDef = b2DefaultShapeDef();
     shapeDef.density = 1.0f;  // Higher density for the main body
     shapeDef.friction = 0.0f;
-    shapeDef.restitution = 0.3f;  // No bounce
-    b2CreateCircleShape(soldier->body, &shapeDef, &circleShape);
 
-    shapeDef.restitution = 0.1f;  // No bounce
+    // Create the body in the Box2D world
+    soldier->body = b2CreateBody(world, &bodyDef);
 
+    // Adjusting spear start and end points: spear held on the right, pointing upwards
+    float offsetX = SOLDIER_RADIUS * 0.5f;  // Offset to move spear to the right of the circle
+    b2Vec2 spearStart = { offsetX, 0.0f };
+    b2Vec2 spearEnd = { offsetX, SOLDIER_SPEAR_LENGTH };  // Pointing upwards in the Y direction
 
     // Segment Shape for Spear Shaft
-    b2Vec2 spearStart = { 0.0f, 0.0f };
-    b2Vec2 spearEnd = { SOLDIER_SPEAR_LENGTH, 0.0f };
     b2Segment spearShape = { spearStart, spearEnd };
     shapeDef.density = 0.5f;  // Lighter density for the spear shaft
+    shapeDef.restitution = 0.0f;
     b2CreateSegmentShape(soldier->body, &shapeDef, &spearShape);
 
-    // Corrected Points for the triangular spear tip
+    // Corrected Points for the triangular spear tip, also offset to align with spear shaft
     b2Vec2 points[] = {
-        { SOLDIER_SPEAR_LENGTH, 0.0f },  // Base of the triangle at the end of the spear
-        { SOLDIER_SPEAR_LENGTH - SOLDIER_SPEAR_TIP_SIZE, SOLDIER_SPEAR_TIP_SIZE },
-        { SOLDIER_SPEAR_LENGTH - SOLDIER_SPEAR_TIP_SIZE, -SOLDIER_SPEAR_TIP_SIZE }
+        { offsetX, SOLDIER_SPEAR_LENGTH },  // Base of the triangle at the end of the spear
+        { offsetX - SOLDIER_SPEAR_TIP_SIZE, SOLDIER_SPEAR_LENGTH - SOLDIER_SPEAR_TIP_SIZE },
+        { offsetX + SOLDIER_SPEAR_TIP_SIZE, SOLDIER_SPEAR_LENGTH - SOLDIER_SPEAR_TIP_SIZE }
     };
 
     // Compute the hull of the points to create a triangle shape
@@ -45,13 +40,18 @@ static void Soldier_Init(Soldier *soldier, b2WorldId world, Vector2 position, fl
     float radius = 0.0f;  // No rounded corners for the triangle tip
     b2Polygon spearTipShape = b2MakePolygon(&hull, radius);
     shapeDef.density = 3.3f;  // Lightest density for the spear tip
+    shapeDef.restitution = 0.1f;
     b2CreatePolygonShape(soldier->body, &shapeDef, &spearTipShape);
 
     // Apply initial rotation to the body
     b2Body_SetTransform(soldier->body, (b2Vec2){ position.x, position.y }, b2MakeRot(rotation));
+
+    // Circle Shape for Body
+    b2Circle circleShape = {0};
+    circleShape.radius = SOLDIER_RADIUS;
+    shapeDef.restitution = 0.3f;
+    b2CreateCircleShape(soldier->body, &shapeDef, &circleShape);
 }
-
-
 
 
 Soldier Soldier_Create(b2WorldId world, Vector2 position, float rotation, Color color) {
