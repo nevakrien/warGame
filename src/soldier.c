@@ -9,6 +9,7 @@ static void Soldier_Init(Soldier *soldier, b2WorldId world, Vector2 position, fl
     // Initialize the body definition
     b2BodyDef bodyDef = b2DefaultBodyDef();
     bodyDef.type = b2_dynamicBody;
+    // bodyDef.fixedRotation = 1;
     bodyDef.position = (b2Vec2){ position.x, position.y };
 
     // Create the body in the Box2D world
@@ -37,7 +38,7 @@ static void Soldier_Init(Soldier *soldier, b2WorldId world, Vector2 position, fl
 
     // Compute the hull of the points to create a triangle shape
     b2Hull hull = b2ComputeHull(points, 3);
-    float radius = 0.0f;  // Set to zero to avoid rounded corners
+    float radius = SOLDIER_SPEAR_LENGTH;  // Set to zero to avoid rounded corners
     b2Polygon spearTipShape = b2MakePolygon(&hull, radius);
     b2CreatePolygonShape(soldier->body, &shapeDef, &spearTipShape);
 
@@ -55,10 +56,34 @@ Soldier Soldier_Create(b2WorldId world, Vector2 position, float rotation, Color 
     return soldier;
 }
 
+#include <math.h>
+
+// Helper function to rotate a point around a center by a given sine and cosine
+static Vector2 RotatePoint(Vector2 point, Vector2 center, float s, float c) {
+    // Translate point to origin
+    point.x -= center.x;
+    point.y -= center.y;
+
+    // Rotate point using sine and cosine
+    float newX = point.x * c - point.y * s;
+    float newY = point.x * s + point.y * c;
+
+    // Translate point back
+    point.x = newX + center.x;
+    point.y = newY + center.y;
+
+    return point;
+}
+
 void Soldier_Render(Soldier soldier) {
     // Get the soldier's position and rotation from Box2D
-    b2Vec2 b2Position = b2Body_GetPosition(soldier.body);
+    b2Transform transform = b2Body_GetTransform(soldier.body);
+    b2Vec2 b2Position = transform.p;
     Vector2 position = { b2Position.x, b2Position.y };
+
+    // Retrieve the sine and cosine of the rotation directly from the transform's rotation component
+    float s = transform.q.s;  // Sine of the angle
+    float c = transform.q.c;  // Cosine of the angle
 
     // Fetch shapes attached to the body
     b2ShapeId shapeIds[3];  // Allocate space for up to 3 shapes
@@ -74,10 +99,12 @@ void Soldier_Render(Soldier soldier) {
             DrawCircleV(position, circle.radius, soldier.color);
 
         } else if (shapeType == b2_segmentShape) {
-            // Render the spear shaft using the segment's start and end points
+            // Render the spear shaft using the segment's start and end points, with rotation
             b2Segment segment = b2Shape_GetSegment(shapeId);
-            Vector2 spearStart = { position.x + segment.point1.x, position.y + segment.point1.y };
-            Vector2 spearEnd = { position.x + segment.point2.x, position.y + segment.point2.y };
+            Vector2 spearStart = RotatePoint(
+                (Vector2){ position.x + segment.point1.x, position.y + segment.point1.y }, position, s, c);
+            Vector2 spearEnd = RotatePoint(
+                (Vector2){ position.x + segment.point2.x, position.y + segment.point2.y }, position, s, c);
             DrawLineV(spearStart, spearEnd, BLACK);
 
         } else if (shapeType == b2_polygonShape) {
@@ -85,18 +112,17 @@ void Soldier_Render(Soldier soldier) {
             b2Polygon triangle = b2Shape_GetPolygon(shapeId);
 
             if (triangle.count == 3) {  // Ensure it has exactly 3 vertices
-                Vector2 v1 = { position.x + triangle.vertices[0].x, position.y + triangle.vertices[0].y };
-                Vector2 v2 = { position.x + triangle.vertices[1].x, position.y + triangle.vertices[1].y };
-                Vector2 v3 = { position.x + triangle.vertices[2].x, position.y + triangle.vertices[2].y };
+                Vector2 v1 = RotatePoint(
+                    (Vector2){ position.x + triangle.vertices[0].x, position.y + triangle.vertices[0].y }, position, s, c);
+                Vector2 v2 = RotatePoint(
+                    (Vector2){ position.x + triangle.vertices[1].x, position.y + triangle.vertices[1].y }, position, s, c);
+                Vector2 v3 = RotatePoint(
+                    (Vector2){ position.x + triangle.vertices[2].x, position.y + triangle.vertices[2].y }, position, s, c);
 
-                // Calculate the cross product to determine if the vertices are in counter-clockwise order
-                b2Vec2 centroid = triangle.centroid;
-                Vector2 cv1 = { v1.x - centroid.x, v1.y - centroid.y };
-                Vector2 cv2 = { v2.x - centroid.x, v2.y - centroid.y };
-                Vector2 cv3 = { v3.x - centroid.x, v3.y - centroid.y };
-                float crossProduct = (cv2.x * cv3.y - cv2.y * cv3.x) - (cv1.x * cv3.y - cv1.y * cv3.x);
+                // Calculate cross product to determine if vertices are in counter-clockwise order
+                float crossProduct = (v2.x - v1.x) * (v3.y - v1.y) - (v2.y - v1.y) * (v3.x - v1.x);
 
-                // If crossProduct is negative, swap v2 and v3 to make it counter-clockwise
+                // If crossProduct is negative, swap v2 and v3 to make the vertices counter-clockwise
                 if (crossProduct > 0) {
                     Vector2 temp = v2;
                     v2 = v3;
@@ -112,4 +138,5 @@ void Soldier_Render(Soldier soldier) {
         }
     }
 }
+
 

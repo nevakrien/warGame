@@ -6,15 +6,20 @@
 
 #define NUM_SOLDIERS 20
 #define SPEED 1.0f
+#define SOLDIER_SPACING 20.0f  // Spacing between soldiers to avoid initial overlap
 
 // Function to initialize soldiers in a small clustered area with varying rotations
 void InitSoldiers(Soldier soldiers[], b2WorldId world) {
     for (int i = 0; i < NUM_SOLDIERS; i++) {
-        float rotation = i * (PI / 10);  // Different starting angles
-        Vector2 position = { 380.0f + (i % 5) * 5.0f, 280.0f + (i / 5) * 5.0f };  // Clustered positions
+        float rotation = 0;//i * (PI / 10);  // Different starting angles in radians
+        Vector2 position = {
+            380.0f + (i % 5) * SOLDIER_SPACING,  // Horizontal spacing
+            280.0f + (i / 5) * SOLDIER_SPACING   // Vertical spacing
+        };
         soldiers[i] = Soldier_Create(world, position, rotation, RED);
     }
 }
+
 
 int main() {
     InitWindow(800, 600, "Soldier Simulation with Camera Control");
