@@ -2,10 +2,11 @@
 #include "box2d/box2d.h"
 #include <stdio.h>
 
+#include "collision.h"
 #include "soldier.h"
 
 #define NUM_SOLDIERS 20
-#define SPEED 1.0f
+#define SPEED 10.0f
 #define SOLDIER_SPACING 20.0f  // Spacing between soldiers to avoid initial overlap
 
 // Function to initialize soldiers in a small clustered area with varying rotations
@@ -19,7 +20,6 @@ void InitSoldiers(Soldier soldiers[], b2WorldId world) {
         soldiers[i] = Soldier_Create(world, position, rotation, GRAY);
     }
 }
-
 
 int main() {
     // Initialize Box2D world with zero gravity
@@ -81,6 +81,7 @@ int main() {
 
         // Step Box2D world to process physics
         b2World_Step(world, 1.0f / 60.0f, 1);
+        handleContacts(world);
 
         // Draw everything
         BeginDrawing();
@@ -91,6 +92,7 @@ int main() {
         // Render each soldier with the combined camera
         for (int i = 0; i < NUM_SOLDIERS; i++) {
             Soldier_Render(soldiers[i]);
+            Soldier_FrameReset(soldiers+i);
         }
 
         // Draw a fixed reference circle at the center of the screen
