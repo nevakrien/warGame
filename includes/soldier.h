@@ -4,6 +4,7 @@
 #include <raylib.h>
 #include <box2d/box2d.h>
 #include "collision.h"
+#include "team.h"
 
 #define SOLDIER_RADIUS 10.0f
 #define SOLDIER_SPEAR_LENGTH 25.0f
@@ -12,7 +13,7 @@
 
 typedef struct {
     TypeID id;
-    Color color;
+    Team* team;
     b2BodyId body;                // Soldier's main body
     b2ShapeId bodyShapeId;        // Shape ID for the soldier's body (circle)
     b2ShapeId spearShaftShapeId;  // Shape ID for the spear shaft (segment)
@@ -22,12 +23,9 @@ typedef struct {
     bool hasHitTarget;            // Flag indicating if the soldier's spear has hit a target
 
     float health;
-    Color deadcolor;
-
-
 } Soldier;
 
-void Soldier_Init(Soldier* soldier,b2WorldId world, Vector2 position, float rotation, Color color,Color deadcolor,float health);
+void Soldier_Init(Soldier* soldier,b2WorldId world, Vector2 position, float rotation, Team* team,float health);
 void Soldier_RenderAlive(Soldier* soldier);
 void Soldier_RenderDead(Soldier* soldier);
 void Soldier_FrameReset(Soldier* soldier);

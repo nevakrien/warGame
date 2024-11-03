@@ -65,12 +65,11 @@ static void Soldier_Init_Phisics(Soldier *soldier, b2WorldId world, Vector2 posi
     b2Body_SetTransform(soldier->body, (b2Vec2){ position.x, position.y }, b2MakeRot(rotation));
 }
 
-void Soldier_Init(Soldier* soldier,b2WorldId world, Vector2 position, float rotation, Color color,Color deadcolor,float health) {
+void Soldier_Init(Soldier* soldier,b2WorldId world, Vector2 position, float rotation, Team* team,float health) {
     // Soldier soldier;
     soldier->id=TYPE_SOLDIER;
     Soldier_Init_Phisics(soldier, world, position, rotation);
-    soldier->color = color;
-    soldier->deadcolor = deadcolor;
+    soldier->team = team;
     soldier->isHit = false;
     soldier->hasHitTarget = false;
     soldier->health=health;
@@ -108,7 +107,7 @@ void Soldier_RenderAlive(Soldier* soldier) {
     float c = transform.q.c;
 
     // Determine the color based on the soldier's state
-    Color bodyColor = soldier->color;
+    Color bodyColor = soldier->team->color;
     if (soldier->isHit) {
         bodyColor = RED;  // Change color if the soldier is hit
     }
@@ -166,7 +165,7 @@ void Soldier_RenderDead(Soldier* soldier){
     b2Vec2 position = transform.p;
 
     b2Circle circle = b2Shape_GetCircle(soldier->bodyShapeId);
-    DrawCircleV((Vector2){ position.x, position.y }, circle.radius, soldier->deadcolor);
+    DrawCircleV((Vector2){ position.x, position.y }, circle.radius, soldier->team->deadcolor);
 
 }
 
