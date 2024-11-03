@@ -2,6 +2,7 @@
 #include "box2d/box2d.h"
 #include <stdio.h>
 #include <assert.h>
+#include <math.h>
 
 #include "collision.h"
 #include "team.h"
@@ -13,6 +14,9 @@
 #define SOLDIER_SPACING 40.0f
 #define STARTING_HEALTH 100.0f
 #define LOW_HEALTH_THRESHOLD 20.0f
+#define ROTATION_SPEED_CAP 2.0f  // Max angular velocity to limit physical rotation speed
+#define ATTACK_ANGLE_THRESHOLD 0.1f // Angle within which a soldier can attack
+#define ANGLE_DIFF_THRESHOLD 0.01f  // Angle difference at which to stop further rotation
 
 const Vector2 BASE_TEAM1 = { 200.0f, 300.0f };
 const Vector2 BASE_TEAM2 = { 600.0f, 300.0f };
@@ -27,11 +31,60 @@ void InitSoldiers(Soldier soldiers[], Team* team1, Team* team2, b2WorldId world)
     }
     
     for (int i = 0; i < NUM_SOLDIERS_TEAM2; i++) {
-        Vector2 position = (Vector2){ BASE_TEAM2.x, BASE_TEAM2.y + (i * SOLDIER_SPACING) + 20.0f }; // Slight offset
+        Vector2 position = (Vector2){ BASE_TEAM2.x, BASE_TEAM2.y + (i * SOLDIER_SPACING) + 20.0f };
         Soldier_Init(&soldiers[index], world, position, PI/2.0f, team2, STARTING_HEALTH);
         index++;
     }
 }
+
+float CalculateAngle(b2Vec2 from, b2Vec2 to) {
+    return atan2f(to.y - from.y, to.x - from.x);
+}
+
+void UpdateSoldier(Soldier* soldier, Soldier* closestEnemy) {
+    b2Vec2 enemyPos = b2Body_GetPosition(closestEnemy->body);
+    b2Vec2 soldierPos = b2Body_GetPosition(soldier->body);
+
+    // Calculate the angle to align the front side of the soldier towards the enemy
+    float angleToEnemy = CalculateAngle(soldierPos, enemyPos);
+    float targetAngle = angleToEnemy - PI / 2;  // Offset by -90 degrees to present the front
+
+    // Wrap the target angle within [-PI, PI] for consistent rotation direction
+    if (targetAngle > PI) targetAngle -= 2 * PI;
+    if (targetAngle < -PI) targetAngle += 2 * PI;
+
+    // Get the current angle from the transform's sine and cosine components
+    b2Transform transform = b2Body_GetTransform(soldier->body);
+    float currentAngle = atan2f(transform.q.s, transform.q.c);
+
+    // Calculate the angle difference and wrap it within [-PI, PI]
+    float angleDiff = targetAngle - currentAngle;
+    if (angleDiff > PI) angleDiff -= 2 * PI;
+    if (angleDiff < -PI) angleDiff += 2 * PI;
+
+    // Rotate smoothly towards the target angle
+    if (fabsf(angleDiff) > ANGLE_DIFF_THRESHOLD) {
+        // Set angular velocity proportionally, capped by ROTATION_SPEED_CAP
+        float angularVelocity = fminf(ROTATION_SPEED_CAP, fabsf(angleDiff)) * (angleDiff > 0 ? 1 : -1);
+        b2Body_SetAngularVelocity(soldier->body, angularVelocity);
+    } else {
+        // Stop rotation if within the angle threshold
+        b2Body_SetAngularVelocity(soldier->body, 0.0f);
+    }
+
+    // Only move if front side is facing the target within ATTACK_ANGLE_THRESHOLD
+    if (fabsf(angleDiff) < ATTACK_ANGLE_THRESHOLD) {
+        float distance = b2Distance(soldierPos, enemyPos);
+        b2Vec2 velocity = (b2Vec2){ (enemyPos.x - soldierPos.x) * SPEED / distance,
+                                    (enemyPos.y - soldierPos.y) * SPEED / distance };
+        b2Body_SetLinearVelocity(soldier->body, velocity);
+    } else {
+        // Stop if not facing the target correctly
+        b2Body_SetLinearVelocity(soldier->body, (b2Vec2){ 0.0f, 0.0f });
+    }
+}
+
+
 
 int main() {
     b2WorldDef worldDef = b2DefaultWorldDef();
@@ -43,7 +96,7 @@ int main() {
     Team team2 = (Team){ BLUE, DARKGRAY };
     InitSoldiers(soldiers, &team1, &team2, world);
 
-    InitWindow(800, 600, "Soldier Simulation with Frontal Charge Setup");
+    InitWindow(800, 600, "Soldier Simulation with Spear Orientation Awareness");
     SetTargetFPS(60);
 
     Camera2D camera = { 0 };
@@ -67,37 +120,23 @@ int main() {
         for (int i = 0; i < NUM_SOLDIERS_TEAM1 + NUM_SOLDIERS_TEAM2; i++) {
             if (Soldier_IsAlive(soldiers + i)) {
                 Soldier* soldier = soldiers + i;
-                b2Vec2 velocity = { 0.0f, 0.0f };
 
-                if (soldier->health < LOW_HEALTH_THRESHOLD) {
-                    // Low health, defensive stance or retreat
-                    velocity = (soldier->team == &team1) ? (b2Vec2){ -SPEED * 0.5f, 0 } : (b2Vec2){ SPEED * 0.5f, 0 };
-                } else {
-                    // Charge toward closest enemy
-                    Soldier* closestEnemy = NULL;
-                    float closestDistance = FLT_MAX;
-
-                    for (int j = 0; j < NUM_SOLDIERS_TEAM1 + NUM_SOLDIERS_TEAM2; j++) {
-                        if (soldiers[j].team != soldier->team && Soldier_IsAlive(soldiers + j)) {
-                            float distance = b2Distance(b2Body_GetPosition(soldier->body),b2Body_GetPosition(soldiers[j].body));
-
-                            if (distance < closestDistance) {
-                                closestDistance = distance;
-                                closestEnemy = soldiers + j;
-                            }
+                // Find the closest enemy
+                Soldier* closestEnemy = NULL;
+                float closestDistance = FLT_MAX;
+                for (int j = 0; j < NUM_SOLDIERS_TEAM1 + NUM_SOLDIERS_TEAM2; j++) {
+                    if (soldiers[j].team != soldier->team && Soldier_IsAlive(soldiers + j)) {
+                        float distance = b2Distance(b2Body_GetPosition(soldier->body), b2Body_GetPosition(soldiers[j].body));
+                        if (distance < closestDistance) {
+                            closestDistance = distance;
+                            closestEnemy = soldiers + j;
                         }
-                    }
-
-                    if (closestEnemy != NULL) {
-                        // Move towards closest enemy
-                        b2Vec2 enemyPos = b2Body_GetPosition(closestEnemy->body);
-                        b2Vec2 soldierPos = b2Body_GetPosition(soldier->body);
-                        velocity = (b2Vec2){ (enemyPos.x - soldierPos.x) * SPEED / closestDistance,
-                                             (enemyPos.y - soldierPos.y) * SPEED / closestDistance };
                     }
                 }
 
-                b2Body_SetLinearVelocity(soldier->body, velocity);
+                if (closestEnemy != NULL) {
+                    UpdateSoldier(soldier, closestEnemy);
+                }
             }
         }
 
