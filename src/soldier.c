@@ -26,7 +26,7 @@ static void Soldier_Init_Phisics(Soldier *soldier, b2WorldId world, Vector2 posi
     shapeDef.density = 1.0f;
     shapeDef.friction = 0.5f;
     shapeDef.restitution = 0.3f;
-    shapeDef.enableContactEvents = true;
+    shapeDef.enableContactEvents = false;
     shapeDef.enableHitEvents = true;
 
     // Create the body shape and store the shape ID
@@ -55,8 +55,8 @@ static void Soldier_Init_Phisics(Soldier *soldier, b2WorldId world, Vector2 posi
     b2Hull hull = b2ComputeHull(points, 3);
     b2Polygon spearTipShape = b2MakePolygon(&hull, 0.0f);  // No rounded corners
     shapeDef.density = 0.3f;
-    shapeDef.enableContactEvents = true;
-    shapeDef.enableHitEvents = true;
+    // shapeDef.enableContactEvents = true;
+    // shapeDef.enableHitEvents = true;
 
     // Create the spear tip shape and store the shape ID
     soldier->spearTipShapeId = b2CreatePolygonShape(soldier->body, &shapeDef, &spearTipShape);

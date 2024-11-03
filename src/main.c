@@ -96,14 +96,14 @@ int main() {
 
         BeginMode2D(camera);
 
+         // Draw a fixed reference circle at the center of the screen
+        DrawCircle(400, 300, 10, BLUE);
+
         // Render each soldier with the combined camera
         for (int i = 0; i < NUM_SOLDIERS; i++) {
             Soldier_Render(soldiers+i);
             Soldier_FrameReset(soldiers+i);
         }
-
-        // Draw a fixed reference circle at the center of the screen
-        DrawCircle(400, 300, 10, BLUE);
 
         EndMode2D();
 
