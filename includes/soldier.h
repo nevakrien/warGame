@@ -7,7 +7,8 @@
 
 #define SOLDIER_RADIUS 10.0f
 #define SOLDIER_SPEAR_LENGTH 25.0f
-#define SOLDIER_SPEAR_TIP_SIZE 1.0f
+#define SOLDIER_SPEAR_TIP_SIZE 0.5f
+#define SOLDIER_SPEAR_TIP_LEN 2.0f
 
 typedef struct {
     TypeID id;
@@ -25,6 +26,9 @@ void Soldier_Init(Soldier* soldier,b2WorldId world, Vector2 position, float rota
 void Soldier_Render(Soldier* soldier);
 void Soldier_FrameReset(Soldier* soldier);
 
-
+static inline void moveSoldier(Soldier* src,Soldier* dest){
+    b2Body_SetUserData(src->body,dest);
+    *dest = *src;
+}
 
 #endif // SOLDIER_H

@@ -47,7 +47,7 @@ static void Soldier_Init_Phisics(Soldier *soldier, b2WorldId world, Vector2 posi
 
     // Polygon Shape for Spear Tip
     b2Vec2 points[] = {
-        { offsetX, SOLDIER_SPEAR_LENGTH },  // Base of the triangle at the end of the spear
+        { offsetX, SOLDIER_SPEAR_LENGTH+SOLDIER_SPEAR_TIP_LEN },  // Base of the triangle at the end of the spear
         { offsetX - SOLDIER_SPEAR_TIP_SIZE, SOLDIER_SPEAR_LENGTH - SOLDIER_SPEAR_TIP_SIZE },
         { offsetX + SOLDIER_SPEAR_TIP_SIZE, SOLDIER_SPEAR_LENGTH - SOLDIER_SPEAR_TIP_SIZE }
     };
