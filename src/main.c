@@ -45,7 +45,7 @@ int main() {
     Camera2D camera = { 0 };
     camera.target = (Vector2){ 400.0f, 300.0f };  // Center of screen
     camera.offset = (Vector2){ 400.0f, 300.0f };  // Render at screen center
-    camera.zoom = 1.0f;
+    camera.zoom = 4.0f;
 
     printf("Soldiers initialized.\n");
 
