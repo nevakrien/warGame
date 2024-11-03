@@ -20,15 +20,25 @@ typedef struct {
     
     bool isHit;                   // Flag indicating if the soldier has been hit
     bool hasHitTarget;            // Flag indicating if the soldier's spear has hit a target
+
+    float health;
+
 } Soldier;
 
-void Soldier_Init(Soldier* soldier,b2WorldId world, Vector2 position, float rotation, Color color);
+void Soldier_Init(Soldier* soldier,b2WorldId world, Vector2 position, float rotation, Color color,float health);
 void Soldier_Render(Soldier* soldier);
 void Soldier_FrameReset(Soldier* soldier);
 
+static inline bool Soldier_IsAlive(Soldier* soldier){
+    return !B2_ID_EQUALS(soldier->body,b2_nullBodyId);
+}
+
 static inline void moveSoldier(Soldier* src,Soldier* dest){
-    b2Body_SetUserData(src->body,dest);
+    if(Soldier_IsAlive(src)){
+        b2Body_SetUserData(src->body,dest);
+    }
     *dest = *src;
 }
+
 
 #endif // SOLDIER_H

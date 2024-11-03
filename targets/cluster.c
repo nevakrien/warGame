@@ -9,6 +9,7 @@
 #define NUM_SOLDIERS 20
 #define SPEED 10.0f
 #define SOLDIER_SPACING 20.0f  // Spacing between soldiers to avoid initial overlap
+#define STARTING_HEALTH 100.0f  // Spacing between soldiers to avoid initial overlap
 
 // Function to initialize soldiers in a small clustered area with varying rotations
 void InitSoldiers(Soldier soldiers[], b2WorldId world) {
@@ -18,7 +19,7 @@ void InitSoldiers(Soldier soldiers[], b2WorldId world) {
             380.0f + (i % 5) * SOLDIER_SPACING,  // Horizontal spacing
             280.0f + (i / 5) * SOLDIER_SPACING   // Vertical spacing
         };
-        Soldier_Init(soldiers+i,world, position, rotation, GRAY);
+        Soldier_Init(soldiers+i,world, position, rotation, GRAY,STARTING_HEALTH);
 
         TypeID t = *((TypeID*)(soldiers+i));
         assert(t==TYPE_SOLDIER);
@@ -82,8 +83,10 @@ int main() {
 
         // Update soldier positions in the Box2D world
         for (int i = 0; i < NUM_SOLDIERS; i++) {
-            b2Vec2 velocity = { SPEED * cosf(i * (PI / 10)), SPEED * sinf(i * (PI / 10)) };
-            b2Body_SetLinearVelocity(soldiers[i].body, velocity);
+            if(Soldier_IsAlive(soldiers+i)){
+                b2Vec2 velocity = { SPEED * cosf(i * (PI / 10)), SPEED * sinf(i * (PI / 10)) };
+                b2Body_SetLinearVelocity(soldiers[i].body, velocity);
+            }
         }
 
         // Step Box2D world to process physics
@@ -120,5 +123,6 @@ int main() {
 
     // Cleanup
     CloseWindow();
+    b2DestroyWorld(world);
     return 0;
 }

@@ -55,9 +55,16 @@ static inline void handleHitContacts(b2ContactEvents contactEvents) {
                 if (soldierASpearHitSoldierBBody) {
                     soldierA->hasHitTarget = true;  // Soldier A's spear hit Soldier B
                     soldierB->isHit = true;         // Soldier B is hit
+
+                    soldierB->health -= hitEvent->approachSpeed;
+                    printf("health %f\n",soldierB->health );
+
                 } else if (soldierBSpearHitSoldierABody) {
                     soldierB->hasHitTarget = true;  // Soldier B's spear hit Soldier A
                     soldierA->isHit = true;         // Soldier A is hit
+
+                    soldierA->health -= hitEvent->approachSpeed;
+                    printf("health %f\n",soldierA->health );
                 }
             }
         }

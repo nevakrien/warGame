@@ -65,13 +65,14 @@ static void Soldier_Init_Phisics(Soldier *soldier, b2WorldId world, Vector2 posi
     b2Body_SetTransform(soldier->body, (b2Vec2){ position.x, position.y }, b2MakeRot(rotation));
 }
 
-void Soldier_Init(Soldier* soldier,b2WorldId world, Vector2 position, float rotation, Color color) {
+void Soldier_Init(Soldier* soldier,b2WorldId world, Vector2 position, float rotation, Color color,float health) {
     // Soldier soldier;
     soldier->id=TYPE_SOLDIER;
     Soldier_Init_Phisics(soldier, world, position, rotation);
     soldier->color = color;
     soldier->isHit = false;
     soldier->hasHitTarget = false;
+    soldier->health=health;
 
     // return soldier;
 }
@@ -94,6 +95,9 @@ static Vector2 RotatePoint(Vector2 point, Vector2 center, float s, float c) {
 }
 
 void Soldier_Render(Soldier* soldier) {
+    if(B2_ID_EQUALS(soldier->body,b2_nullBodyId)){
+        return;
+    }
     // Get the soldier's transform
     b2Transform transform = b2Body_GetTransform(soldier->body);
     b2Vec2 position = transform.p;
@@ -153,4 +157,10 @@ void Soldier_Render(Soldier* soldier) {
 void Soldier_FrameReset(Soldier* soldier){
     soldier->isHit = false;
     soldier->hasHitTarget = false;
+
+    if(soldier->health <= 0){
+        b2DestroyBody(soldier->body);
+        soldier->body = b2_nullBodyId;
+        soldier->health = NAN;//make sure we wont triger again.
+    }
 }
