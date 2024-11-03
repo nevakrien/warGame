@@ -154,6 +154,9 @@ int main() {
         // Render soldiers
         for (int i = 0; i < NUM_SOLDIERS_TEAM1 + NUM_SOLDIERS_TEAM2; i++) {
             Soldier_RenderDead(soldiers + i);
+        }
+
+        for (int i = 0; i < NUM_SOLDIERS_TEAM1 + NUM_SOLDIERS_TEAM2; i++) {
             Soldier_RenderAlive(soldiers + i);
             Soldier_FrameReset(soldiers + i);
         }
