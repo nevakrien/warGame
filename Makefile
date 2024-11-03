@@ -1,6 +1,7 @@
 # Compiler
-CC = $(shell which gcc-14 || echo gcc) # Prefer gcc-14 if available
-CFLAGS = -g2 -Wall -Wextra # -fno-strict-aliasing
+# CC = $(shell which gcc-14 || echo gcc) # Prefer gcc-14 if available
+CC = gcc-openmp -fopenmp
+CFLAGS = -g3 -Wall -Wextra # -fno-strict-aliasing
 
 # Directories
 SRC_DIR = src
