@@ -45,6 +45,10 @@ static inline void handleHitContacts(b2ContactEvents contactEvents) {
                 Soldier* soldierA = (Soldier*)userDataA;
                 Soldier* soldierB = (Soldier*)userDataB;
 
+                if (soldierA->team==soldierB->team){
+                	return;
+                }
+
                 // Determine if it's a spear-tip-to-body hit
                 bool soldierASpearHitSoldierBBody = 
                     (B2_ID_EQUALS(shapeA, soldierA->spearTipShapeId) && B2_ID_EQUALS(shapeB, soldierB->bodyShapeId)) ||

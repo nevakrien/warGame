@@ -24,8 +24,8 @@ static void Soldier_Init_Phisics(Soldier *soldier, b2WorldId world, Vector2 posi
     b2Circle circleShape = {0};
     circleShape.radius = SOLDIER_RADIUS;
     shapeDef.density = 1.0f;
-    shapeDef.friction = 0.5f;
-    shapeDef.restitution = 0.3f;
+    shapeDef.friction = 0.0f;
+    shapeDef.restitution = 0.0f;
     shapeDef.enableContactEvents = false;
     shapeDef.enableHitEvents = true;
 

@@ -13,13 +13,15 @@
 #define STARTING_HEALTH 100.0f  // Spacing between soldiers to avoid initial overlap
 
 // Function to initialize soldiers in a small clustered area with varying rotations
-void InitSoldiers(Soldier soldiers[],Team* team, b2WorldId world) {
+void InitSoldiers(Soldier soldiers[],Team* team1,Team* team2, b2WorldId world) {
     for (int i = 0; i < NUM_SOLDIERS; i++) {
         float rotation = i * (PI / NUM_SOLDIERS);  // Different starting angles in radians
         Vector2 position = {
             380.0f + (i % 5) * SOLDIER_SPACING,  // Horizontal spacing
             280.0f + (i / 5) * SOLDIER_SPACING   // Vertical spacing
         };
+        Team* team = (i % 2 == 0) ? team1 : team2;
+
         Soldier_Init(soldiers+i,world, position, rotation,team,STARTING_HEALTH);
 
         TypeID t = *((TypeID*)(soldiers+i));
@@ -38,8 +40,9 @@ int main() {
 
     // Array of soldiers
     Soldier soldiers[NUM_SOLDIERS];
-    Team team = (Team){GRAY,DARKGRAY};
-    InitSoldiers(soldiers,&team, world);
+    Team team1 = (Team){GRAY,DARKGRAY};
+    Team team2 = (Team){BLUE,DARKGRAY};
+    InitSoldiers(soldiers,&team1,&team2, world);
 
     InitWindow(800, 600, "Soldier Simulation with Camera Control");
     SetTargetFPS(60);
