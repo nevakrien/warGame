@@ -48,7 +48,7 @@ static inline void handleBeginContacts(b2ContactEvents contactEvents) {
                 printf("Begin Contact (%d): A: %s, B: %s\n", i + 1, shapeTypeA, shapeTypeB);
             } else {
                 printf("Begin contact event %d: Unexpected type ID(s): A (%d), B (%d)\n", i + 1, typeA, typeB);
-                //exit(1);
+                exit(1);
             }
         } else {
             printf("Begin contact event %d has null user data\n", i + 1);
@@ -91,7 +91,7 @@ static inline void handleHitContacts(b2ContactEvents contactEvents) {
                        i + 1, shapeTypeA, shapeTypeB, hitEvent->approachSpeed);
             } else {
                 printf("Hit contact event %d: Unexpected type ID(s): A (%d), B (%d)\n", i + 1, typeA, typeB);
-                //exit(1);
+                exit(1);
 
             }
         } else {
@@ -130,7 +130,7 @@ static inline void handleEndContacts(b2ContactEvents contactEvents) {
                 printf("End Contact (%d): A: %s, B: %s\n", i + 1, shapeTypeA, shapeTypeB);
             } else {
                 printf("End contact event %d: Unexpected type ID(s): A (%d), B (%d)\n", i + 1, typeA, typeB);
-                //exit(1);
+                exit(1);
 
             }
         } else {

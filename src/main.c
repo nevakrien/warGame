@@ -18,12 +18,12 @@ void InitSoldiers(Soldier soldiers[], b2WorldId world) {
             380.0f + (i % 5) * SOLDIER_SPACING,  // Horizontal spacing
             280.0f + (i / 5) * SOLDIER_SPACING   // Vertical spacing
         };
-        soldiers[i] = Soldier_Create(world, position, rotation, GRAY);
+        Soldier_Init(soldiers+i,world, position, rotation, GRAY);
 
         TypeID t = *((TypeID*)(soldiers+i));
         assert(t==TYPE_SOLDIER);
 
-        t = *((TypeID*)(b2Body_GetUserData(soldiers[i].body)));
+        t = *((TypeID*)b2Body_GetUserData(soldiers[i].body));
         assert(t==TYPE_SOLDIER);
     }
 }
@@ -98,7 +98,7 @@ int main() {
 
         // Render each soldier with the combined camera
         for (int i = 0; i < NUM_SOLDIERS; i++) {
-            Soldier_Render(soldiers[i]);
+            Soldier_Render(soldiers+i);
             Soldier_FrameReset(soldiers+i);
         }
 

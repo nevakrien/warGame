@@ -8,7 +8,7 @@
 
 
 // Helper function to initialize the soldier's shapes
-static void Soldier_Init(Soldier *soldier, b2WorldId world, Vector2 position, float rotation) {
+static void Soldier_Init_Phisics(Soldier *soldier, b2WorldId world, Vector2 position, float rotation) {
     // Initialize the body definition
     b2BodyDef bodyDef = b2DefaultBodyDef();
     bodyDef.userData = &soldier->id;
@@ -65,15 +65,15 @@ static void Soldier_Init(Soldier *soldier, b2WorldId world, Vector2 position, fl
     b2Body_SetTransform(soldier->body, (b2Vec2){ position.x, position.y }, b2MakeRot(rotation));
 }
 
-Soldier Soldier_Create(b2WorldId world, Vector2 position, float rotation, Color color) {
-    Soldier soldier;
-    soldier.id=TYPE_SOLDIER;
-    Soldier_Init(&soldier, world, position, rotation);
-    soldier.color = color;
-    soldier.isHit = false;
-    soldier.hasHitTarget = false;
+void Soldier_Init(Soldier* soldier,b2WorldId world, Vector2 position, float rotation, Color color) {
+    // Soldier soldier;
+    soldier->id=TYPE_SOLDIER;
+    Soldier_Init_Phisics(soldier, world, position, rotation);
+    soldier->color = color;
+    soldier->isHit = false;
+    soldier->hasHitTarget = false;
 
-    return soldier;
+    // return soldier;
 }
 
 // Helper function to rotate a point around a center by a given sine and cosine
@@ -93,25 +93,25 @@ static Vector2 RotatePoint(Vector2 point, Vector2 center, float s, float c) {
     return point;
 }
 
-void Soldier_Render(Soldier soldier) {
+void Soldier_Render(Soldier* soldier) {
     // Get the soldier's transform
-    b2Transform transform = b2Body_GetTransform(soldier.body);
+    b2Transform transform = b2Body_GetTransform(soldier->body);
     b2Vec2 position = transform.p;
     float s = transform.q.s;
     float c = transform.q.c;
 
     // Determine the color based on the soldier's state
-    Color bodyColor = soldier.color;
-    if (soldier.isHit) {
+    Color bodyColor = soldier->color;
+    if (soldier->isHit) {
         bodyColor = RED;  // Change color if the soldier is hit
     }
 
     // Render the soldier's body
-    b2Circle circle = b2Shape_GetCircle(soldier.bodyShapeId);
+    b2Circle circle = b2Shape_GetCircle(soldier->bodyShapeId);
     DrawCircleV((Vector2){ position.x, position.y }, circle.radius, bodyColor);
 
     // Render the spear shaft
-    b2Segment segment = b2Shape_GetSegment(soldier.spearShaftShapeId);
+    b2Segment segment = b2Shape_GetSegment(soldier->spearShaftShapeId);
     Vector2 spearStart = RotatePoint(
         (Vector2){ position.x + segment.point1.x, position.y + segment.point1.y }, 
         (Vector2){ position.x, position.y }, s, c);
@@ -121,7 +121,7 @@ void Soldier_Render(Soldier soldier) {
     DrawLineV(spearStart, spearEnd, BLACK);
 
     // Render the spear tip
-    b2Polygon spearTip = b2Shape_GetPolygon(soldier.spearTipShapeId);
+    b2Polygon spearTip = b2Shape_GetPolygon(soldier->spearTipShapeId);
     Vector2 v1 = RotatePoint(
         (Vector2){ position.x + spearTip.vertices[0].x, position.y + spearTip.vertices[0].y }, 
         (Vector2){ position.x, position.y }, s, c);
@@ -142,7 +142,7 @@ void Soldier_Render(Soldier soldier) {
 
     // Change spear tip color if it has hit a target
     Color spearColor = BLACK;
-    if (soldier.hasHitTarget) {
+    if (soldier->hasHitTarget) {
         spearColor = GREEN;  // Indicate a successful hit
     }
 

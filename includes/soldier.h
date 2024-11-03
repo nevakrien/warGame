@@ -21,8 +21,8 @@ typedef struct {
     bool hasHitTarget;            // Flag indicating if the soldier's spear has hit a target
 } Soldier;
 
-Soldier Soldier_Create(b2WorldId world, Vector2 position, float rotation, Color color);
-void Soldier_Render(Soldier soldier);
+void Soldier_Init(Soldier* soldier,b2WorldId world, Vector2 position, float rotation, Color color);
+void Soldier_Render(Soldier* soldier);
 void Soldier_FrameReset(Soldier* soldier);
 
 
