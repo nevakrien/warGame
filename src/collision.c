@@ -3,10 +3,11 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 
 
 // Define the minimum speed threshold for triggering a hit
-#define HIT_SPEED_THRESHOLD 10.0f
+#define HIT_SPEED_THRESHOLD 1.0f
 
 
 // Inline function to handle begin contact events with detailed logging
@@ -19,6 +20,8 @@ static inline void handleBeginContacts(b2ContactEvents  __attribute__((unused)) 
 // Inline function to handle hit contact events and update soldier hit flags
 static inline void handleHitContacts(b2ContactEvents contactEvents) {
     for (int i = 0; i < contactEvents.hitCount; ++i) {
+        // assert(0); //debuging
+
         b2ContactHitEvent* hitEvent = contactEvents.hitEvents + i;
         b2ShapeId shapeA = hitEvent->shapeIdA;
         b2ShapeId shapeB = hitEvent->shapeIdB;

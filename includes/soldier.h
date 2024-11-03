@@ -22,15 +22,26 @@ typedef struct {
     bool hasHitTarget;            // Flag indicating if the soldier's spear has hit a target
 
     float health;
+    Color deadcolor;
+
 
 } Soldier;
 
-void Soldier_Init(Soldier* soldier,b2WorldId world, Vector2 position, float rotation, Color color,float health);
-void Soldier_Render(Soldier* soldier);
+void Soldier_Init(Soldier* soldier,b2WorldId world, Vector2 position, float rotation, Color color,Color deadcolor,float health);
+void Soldier_RenderAlive(Soldier* soldier);
+void Soldier_RenderDead(Soldier* soldier);
 void Soldier_FrameReset(Soldier* soldier);
 
 static inline bool Soldier_IsAlive(Soldier* soldier){
-    return !B2_ID_EQUALS(soldier->body,b2_nullBodyId);
+    return !isnan(soldier->health);
+    // return !B2_ID_EQUALS(soldier->body,b2_nullBodyId);
+}
+
+static inline void Soldier_Die(Soldier* soldier){
+    // b2DestroyBody(soldier->body);
+    b2Body_Disable  (soldier->body);
+    // soldier->body = b2_nullBodyId;
+    soldier->health = NAN;//make sure we wont triger health check again.
 }
 
 static inline void moveSoldier(Soldier* src,Soldier* dest){

@@ -65,11 +65,12 @@ static void Soldier_Init_Phisics(Soldier *soldier, b2WorldId world, Vector2 posi
     b2Body_SetTransform(soldier->body, (b2Vec2){ position.x, position.y }, b2MakeRot(rotation));
 }
 
-void Soldier_Init(Soldier* soldier,b2WorldId world, Vector2 position, float rotation, Color color,float health) {
+void Soldier_Init(Soldier* soldier,b2WorldId world, Vector2 position, float rotation, Color color,Color deadcolor,float health) {
     // Soldier soldier;
     soldier->id=TYPE_SOLDIER;
     Soldier_Init_Phisics(soldier, world, position, rotation);
     soldier->color = color;
+    soldier->deadcolor = deadcolor;
     soldier->isHit = false;
     soldier->hasHitTarget = false;
     soldier->health=health;
@@ -94,8 +95,10 @@ static Vector2 RotatePoint(Vector2 point, Vector2 center, float s, float c) {
     return point;
 }
 
-void Soldier_Render(Soldier* soldier) {
-    if(B2_ID_EQUALS(soldier->body,b2_nullBodyId)){
+
+
+void Soldier_RenderAlive(Soldier* soldier) {
+    if(!Soldier_IsAlive(soldier)){
         return;
     }
     // Get the soldier's transform
@@ -154,13 +157,24 @@ void Soldier_Render(Soldier* soldier) {
     DrawTriangle(v1, v2, v3, spearColor);
 }
 
+void Soldier_RenderDead(Soldier* soldier){
+    if(Soldier_IsAlive(soldier)){
+        return;
+    }
+    // Render the soldier's body
+    b2Transform transform = b2Body_GetTransform(soldier->body);
+    b2Vec2 position = transform.p;
+
+    b2Circle circle = b2Shape_GetCircle(soldier->bodyShapeId);
+    DrawCircleV((Vector2){ position.x, position.y }, circle.radius, soldier->deadcolor);
+
+}
+
 void Soldier_FrameReset(Soldier* soldier){
     soldier->isHit = false;
     soldier->hasHitTarget = false;
 
     if(soldier->health <= 0){
-        b2DestroyBody(soldier->body);
-        soldier->body = b2_nullBodyId;
-        soldier->health = NAN;//make sure we wont triger again.
+        Soldier_Die(soldier);
     }
 }

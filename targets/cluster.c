@@ -19,7 +19,7 @@ void InitSoldiers(Soldier soldiers[], b2WorldId world) {
             380.0f + (i % 5) * SOLDIER_SPACING,  // Horizontal spacing
             280.0f + (i / 5) * SOLDIER_SPACING   // Vertical spacing
         };
-        Soldier_Init(soldiers+i,world, position, rotation, GRAY,STARTING_HEALTH);
+        Soldier_Init(soldiers+i,world, position, rotation, GRAY,DARKGRAY,STARTING_HEALTH);
 
         TypeID t = *((TypeID*)(soldiers+i));
         assert(t==TYPE_SOLDIER);
@@ -102,9 +102,14 @@ int main() {
          // Draw a fixed reference circle at the center of the screen
         DrawCircle(400, 300, 10, BLUE);
 
+        //render dead soldiers on the flour
+        for (int i = 0; i < NUM_SOLDIERS; i++) {
+            Soldier_RenderDead(soldiers+i);
+        }
+
         // Render each soldier with the combined camera
         for (int i = 0; i < NUM_SOLDIERS; i++) {
-            Soldier_Render(soldiers+i);
+            Soldier_RenderAlive(soldiers+i);
             Soldier_FrameReset(soldiers+i);
         }
 
