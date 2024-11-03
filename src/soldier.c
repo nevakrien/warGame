@@ -143,7 +143,7 @@ void Soldier_Render(Soldier* soldier) {
     // Change spear tip color if it has hit a target
     Color spearColor = BLACK;
     if (soldier->hasHitTarget) {
-        spearColor = GREEN;  // Indicate a successful hit
+        spearColor = YELLOW;  // Indicate a successful hit
     }
 
     // Draw the spear tip
