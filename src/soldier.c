@@ -11,7 +11,7 @@
 static void Soldier_Init(Soldier *soldier, b2WorldId world, Vector2 position, float rotation) {
     // Initialize the body definition
     b2BodyDef bodyDef = b2DefaultBodyDef();
-    bodyDef.userData = soldier;
+    bodyDef.userData = &soldier->id;
 
     bodyDef.type = b2_dynamicBody;
     bodyDef.position = (b2Vec2){ position.x, position.y };
@@ -26,6 +26,8 @@ static void Soldier_Init(Soldier *soldier, b2WorldId world, Vector2 position, fl
     shapeDef.density = 1.0f;
     shapeDef.friction = 0.5f;
     shapeDef.restitution = 0.3f;
+    shapeDef.enableContactEvents = true;
+    shapeDef.enableHitEvents = true;
 
     // Create the body shape and store the shape ID
     soldier->bodyShapeId = b2CreateCircleShape(soldier->body, &shapeDef, &circleShape);
@@ -36,6 +38,9 @@ static void Soldier_Init(Soldier *soldier, b2WorldId world, Vector2 position, fl
     b2Vec2 spearEnd = { offsetX, SOLDIER_SPEAR_LENGTH };  // Pointing upwards in the Y direction
     b2Segment spearShape = { spearStart, spearEnd };
     shapeDef.density = 0.5f;
+    shapeDef.enableContactEvents = false;
+    shapeDef.enableHitEvents = false;
+
 
     // Create the spear shaft shape and store the shape ID
     soldier->spearShaftShapeId = b2CreateSegmentShape(soldier->body, &shapeDef, &spearShape);
@@ -50,6 +55,8 @@ static void Soldier_Init(Soldier *soldier, b2WorldId world, Vector2 position, fl
     b2Hull hull = b2ComputeHull(points, 3);
     b2Polygon spearTipShape = b2MakePolygon(&hull, 0.0f);  // No rounded corners
     shapeDef.density = 0.3f;
+    shapeDef.enableContactEvents = true;
+    shapeDef.enableHitEvents = true;
 
     // Create the spear tip shape and store the shape ID
     soldier->spearTipShapeId = b2CreatePolygonShape(soldier->body, &shapeDef, &spearTipShape);

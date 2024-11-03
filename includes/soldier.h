@@ -25,4 +25,6 @@ Soldier Soldier_Create(b2WorldId world, Vector2 position, float rotation, Color 
 void Soldier_Render(Soldier soldier);
 void Soldier_FrameReset(Soldier* soldier);
 
+
+
 #endif // SOLDIER_H

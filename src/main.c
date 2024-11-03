@@ -1,6 +1,7 @@
 #include "raylib.h"
 #include "box2d/box2d.h"
 #include <stdio.h>
+#include <assert.h>
 
 #include "collision.h"
 #include "soldier.h"
@@ -18,6 +19,12 @@ void InitSoldiers(Soldier soldiers[], b2WorldId world) {
             280.0f + (i / 5) * SOLDIER_SPACING   // Vertical spacing
         };
         soldiers[i] = Soldier_Create(world, position, rotation, GRAY);
+
+        TypeID t = *((TypeID*)(soldiers+i));
+        assert(t==TYPE_SOLDIER);
+
+        t = *((TypeID*)(b2Body_GetUserData(soldiers[i].body)));
+        assert(t==TYPE_SOLDIER);
     }
 }
 

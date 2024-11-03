@@ -1,6 +1,7 @@
 # Compiler
-CC = $(shell which gcc-14 || echo gcc) # Prefer gcc-14 if available
-CFLAGS = -g2 -Wall -Wextra -O2
+# CC = $(shell which gcc-14 || echo gcc) # Prefer gcc-14 if available
+CC =gcc
+CFLAGS = -g2 -Wall -Wextra -g2 -fsanitize=undefined -fsanitize=address -fno-strict-aliasing
 
 # Target executable
 TARGET = game.out

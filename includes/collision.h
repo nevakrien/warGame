@@ -6,8 +6,9 @@
 
 // Your declarations here
 typedef enum  {
-	TYPE_SOLDIER
+	TYPE_SOLDIER=1
 } TypeID;
+
 
 void handleContacts(b2WorldId world);
 
