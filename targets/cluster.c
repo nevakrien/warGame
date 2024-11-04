@@ -115,7 +115,7 @@ int main() {
         // Render each soldier with the combined camera
         for (int i = 0; i < NUM_SOLDIERS; i++) {
             Soldier_RenderAlive(soldiers+i);
-            Soldier_FrameReset(soldiers+i);
+            Soldier_FrameReset(soldiers+i,world);
         }
 
         EndMode2D();

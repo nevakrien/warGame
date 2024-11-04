@@ -31,18 +31,23 @@ typedef struct {
 void Soldier_Init(Soldier* soldier,b2WorldId world, Vector2 position, float rotation, Team* team,float health);
 void Soldier_RenderAlive(Soldier* soldier);
 void Soldier_RenderDead(Soldier* soldier);
-void Soldier_FrameReset(Soldier* soldier);
+void Soldier_FrameReset(Soldier* soldier,b2WorldId world);
 
 static inline bool Soldier_IsAlive(Soldier* soldier){
     return !isnan(soldier->health);
     // return !B2_ID_EQUALS(soldier->body,b2_nullBodyId);
 }
 
-static inline void Soldier_Die(Soldier* soldier){
+void handle_residual_touch(Soldier* deadSoldier,b2WorldId world);
+
+static inline void Soldier_Die(Soldier* soldier,b2WorldId world){
     // b2DestroyBody(soldier->body);
     b2Body_Disable  (soldier->body);
     // soldier->body = b2_nullBodyId;
     soldier->health = NAN;//make sure we wont triger health check again.
+    if(soldier->hasHitTarget){
+        handle_residual_touch(soldier,world);
+    }
 }
 
 static inline void moveSoldier(Soldier* src,Soldier* dest){

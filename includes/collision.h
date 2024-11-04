@@ -6,6 +6,5 @@
 #include "id.h"
 
 void handleContacts(b2WorldId world);
-void handleTouch(b2WorldId world, Soldier* soldiers, int numSoldiers);
 
 #endif // COLLISION_H

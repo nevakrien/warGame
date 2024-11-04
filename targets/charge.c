@@ -14,7 +14,7 @@
 
 #define NUM_SOLDIERS_TEAM1 2400
 #define NUM_SOLDIERS_TEAM2 1600
-#define SPEED 10.0f
+#define SPEED 15.0f
 #define SOLDIER_SPACING 40.0f
 #define STARTING_HEALTH 100.0f
 #define LOW_HEALTH_THRESHOLD 20.0f
@@ -194,7 +194,9 @@ void UpdateAllSoldiers(Soldier soldiers[], int numSoldiers, Team* team1, Team* t
 int main() {
     b2WorldDef worldDef = b2DefaultWorldDef();
     worldDef.gravity = (b2Vec2){ 0.0f, 0.0f };
+    worldDef.hitEventThreshold=0.0001f;
     b2WorldId world = b2CreateWorld(&worldDef);
+
 
     Soldier soldiers[NUM_SOLDIERS_TEAM1 + NUM_SOLDIERS_TEAM2];
     Team team1 = (Team){ GRAY, DARKGRAY };
@@ -226,7 +228,6 @@ int main() {
 
         b2World_Step(world, 1.0f / 60.0f, 1);
         handleContacts(world);
-        handleTouch(world,soldiers,NUM_SOLDIERS_TEAM1 + NUM_SOLDIERS_TEAM2);
 
         BeginDrawing();
         ClearBackground(RAYWHITE);
@@ -243,7 +244,7 @@ int main() {
         // Render soldiers
         for (int i = 0; i < NUM_SOLDIERS_TEAM1 + NUM_SOLDIERS_TEAM2; i++) {
             Soldier_RenderAlive(&soldiers[i]);
-            Soldier_FrameReset(&soldiers[i]);
+            Soldier_FrameReset(&soldiers[i],world);
         }
 
         EndMode2D();
