@@ -1,8 +1,8 @@
 # Compiler
 # CC = $(shell which gcc-14 || echo gcc) # Prefer gcc-14 if available
 # Compilers
-CC =gcc-openmp -fopenmp
-CXX = g++-openmp -fopenmp
+CC =gcc-14 
+CXX = g++-14 
 CFLAGS = -g3 -Wall -lstdc++ -Wextra
 CXXFLAGS = $(CFLAGS) -fpermissive  # C++ standard can be adjusted as needed
 
@@ -29,11 +29,19 @@ TARGETS = $(C_TARGETS) $(CPP_TARGETS)
 # Default target
 all: $(TARGETS)
 
-# Link each C target executable
-$(C_TARGETS): %.out: $(OBJS) $(TARGET_DIR)/%.c
-	$(CC) $(CFLAGS) $(OBJS) $(TARGET_DIR)/$*.c -o $@ $(INCLUDES) $(LIBS)
+# Generate an object file for each C target instead of an executable
+C_TARGET_OBJS = $(patsubst $(TARGET_DIR)/%.c, $(OBJ_DIR)/%.target.o, $(wildcard $(TARGET_DIR)/*.c))
 
-# Link each C++ target executable
+# Link each C target executable
+$(C_TARGETS): %.out: $(OBJS) $(OBJ_DIR)/%.target.o
+	$(CXX) $(CXXFLAGS) $(OBJS) $(OBJ_DIR)/$*.target.o -o $@ $(INCLUDES) $(LIBS)
+
+# Compile each C target source file into a separate object file (containing main)
+$(C_TARGET_OBJS): $(OBJ_DIR)/%.target.o: $(TARGET_DIR)/%.c | $(OBJ_DIR)
+	$(CC) $(CFLAGS) -c $< -o $@ $(INCLUDES)
+
+
+# # Link each C++ target executable
 $(CPP_TARGETS): %.out: $(OBJS) $(TARGET_DIR)/%.cpp
 	$(CXX) $(CXXFLAGS) $(OBJS) $(TARGET_DIR)/$*.cpp -o $@ $(INCLUDES) $(LIBS)
 
