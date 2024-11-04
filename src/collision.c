@@ -57,50 +57,51 @@ static inline void handleBeginContacts(__attribute__((unused)) b2ContactEvents c
     }
 }
 
+//cant make this work right because of death
 // Inline function to handle end contact events with detailed logging
 static inline void handleEndContacts(__attribute__((unused)) b2ContactEvents contactEvents) {
-    for (int i = 0; i < contactEvents.endCount; ++i) {
-        b2ContactEndTouchEvent* endEvent = contactEvents.endEvents + i;
-        b2ShapeId shapeA = endEvent->shapeIdA;
-        b2ShapeId shapeB = endEvent->shapeIdB;
+    // for (int i = 0; i < contactEvents.endCount; ++i) {
+    //     b2ContactEndTouchEvent* endEvent = contactEvents.endEvents + i;
+    //     b2ShapeId shapeA = endEvent->shapeIdA;
+    //     b2ShapeId shapeB = endEvent->shapeIdB;
 
-        b2BodyId bodyA = b2Shape_GetBody(shapeA);
-        b2BodyId bodyB = b2Shape_GetBody(shapeB);
+    //     b2BodyId bodyA = b2Shape_GetBody(shapeA);
+    //     b2BodyId bodyB = b2Shape_GetBody(shapeB);
 
-        void* userDataA = b2Body_GetUserData(bodyA);
-        void* userDataB = b2Body_GetUserData(bodyB);
+    //     void* userDataA = b2Body_GetUserData(bodyA);
+    //     void* userDataB = b2Body_GetUserData(bodyB);
 
-        if (userDataA != NULL && userDataB != NULL) {
-            TypeID typeA = *((TypeID*)userDataA);
-            TypeID typeB = *((TypeID*)userDataB);
+    //     if (userDataA != NULL && userDataB != NULL) {
+    //         TypeID typeA = *((TypeID*)userDataA);
+    //         TypeID typeB = *((TypeID*)userDataB);
 
-            if (typeA == TYPE_SOLDIER && typeB == TYPE_SOLDIER) {
-                Soldier* soldierA = (Soldier*)userDataA;
-                Soldier* soldierB = (Soldier*)userDataB;
+    //         if (typeA == TYPE_SOLDIER && typeB == TYPE_SOLDIER) {
+    //             Soldier* soldierA = (Soldier*)userDataA;
+    //             Soldier* soldierB = (Soldier*)userDataB;
 
-                if (soldierA->team == soldierB->team) {
-                    continue;
-                }
+    //             if (soldierA->team == soldierB->team) {
+    //                 continue;
+    //             }
 
-                // Check if soldier A's spear is no longer touching soldier B's body or vice versa
-                bool soldierASpearNoLongerTouchesSoldierB = 
-                    B2_ID_EQUALS(shapeA, soldierA->spearTipShapeId) && B2_ID_EQUALS(shapeB, soldierB->bodyShapeId);
-                bool soldierBSpearNoLongerTouchesSoldierA = 
-                    B2_ID_EQUALS(shapeA, soldierB->spearTipShapeId) && B2_ID_EQUALS(shapeB, soldierA->bodyShapeId);
+    //             // Check if soldier A's spear is no longer touching soldier B's body or vice versa
+    //             bool soldierASpearNoLongerTouchesSoldierB = 
+    //                 B2_ID_EQUALS(shapeA, soldierA->spearTipShapeId) && B2_ID_EQUALS(shapeB, soldierB->bodyShapeId);
+    //             bool soldierBSpearNoLongerTouchesSoldierA = 
+    //                 B2_ID_EQUALS(shapeA, soldierB->spearTipShapeId) && B2_ID_EQUALS(shapeB, soldierA->bodyShapeId);
 
-                if (soldierASpearNoLongerTouchesSoldierB ) {
-                    atomic_fetch_sub(&(soldierB->numTouch), 1);
+    //             if (soldierASpearNoLongerTouchesSoldierB ) {
+    //                 atomic_fetch_sub(&(soldierB->numTouch), 1);
 
-                    // soldierB->numTouch--;  // Decrease numTouch for Soldier B
-                }
-                if (soldierBSpearNoLongerTouchesSoldierA ) {
-                    atomic_fetch_sub(&(soldierA->numTouch), 1);
+    //                 // soldierB->numTouch--;  // Decrease numTouch for Soldier B
+    //             }
+    //             if (soldierBSpearNoLongerTouchesSoldierA ) {
+    //                 atomic_fetch_sub(&(soldierA->numTouch), 1);
 
-                    // soldierA->numTouch--;  // Decrease numTouch for Soldier A
-                }
-            }
-        }
-    }
+    //                 // soldierA->numTouch--;  // Decrease numTouch for Soldier A
+    //             }
+    //         }
+    //     }
+    // }
 }
 
 

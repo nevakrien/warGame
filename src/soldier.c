@@ -184,12 +184,11 @@ void Soldier_RenderDead(Soldier* soldier){
 }
 
 void Soldier_FrameReset(Soldier* soldier,b2WorldId world){    
-    if(soldier->numTouch<0){
-        soldier->numTouch=0; //anoyingly we cant keep acurate track so because of the disable part
-    }
+
     
     soldier->health-=soldier->numTouch * TOUCH_HP_MUL;
-
+    soldier->numTouch=0; //anoyingly we cant keep acurate track so because of the disable part
+    
     if(soldier->health <= 0){
         Soldier_Die(soldier,world);
     }
@@ -197,60 +196,5 @@ void Soldier_FrameReset(Soldier* soldier,b2WorldId world){
     soldier->isHit = false;
     soldier->hasHitTarget = false;
 
-}
-
-static bool ResidualTouchCallback(b2ShapeId shapeId, void* userData) {
-    Soldier* deadSoldier = (Soldier*)userData;
-
-    // Get the body and user data of the fixture's owner
-    b2BodyId body = b2Shape_GetBody(shapeId);
-    void* otherUserData = b2Body_GetUserData(body);
-
-    if (otherUserData == NULL || otherUserData == deadSoldier) {
-        return true;  // Ignore self and null bodies
-    }
-
-    Soldier* otherSoldier = (Soldier*)otherUserData;
-    if (otherSoldier->team == deadSoldier->team) {
-        return true;  // Ignore teammates
-    }
-
-    // Check if the shape belongs to an enemy's body
-    if (B2_ID_EQUALS(shapeId, otherSoldier->bodyShapeId)) {
-        atomic_fetch_sub(&(otherSoldier->numTouch), 1);  // Decrement numTouch for the enemy in contact
-    }
-
-    return true;  // Continue checking other overlaps
-}
-
-// void handle_residual_touch(Soldier* deadSoldier,b2WorldId world) {
-//     b2QueryFilter filter = b2DefaultQueryFilter();
-
-//     // Define the transform of the dead soldier's spear
-//     b2Transform transform = b2Body_GetTransform(deadSoldier->body);
-//     b2Polygon poly= b2Shape_GetPolygon(deadSoldier->spearTipShapeId);
-//     // Run the overlap query using the dead soldier's spear shape
-//     b2World_OverlapPolygon(world,&poly, transform, filter, ResidualTouchCallback, (void*)deadSoldier);
-// }
-
-void handle_residual_touch(Soldier* deadSoldier, b2WorldId world) {
-    b2QueryFilter filter = b2DefaultQueryFilter();
-
-    // Get the transform of the dead soldier's body
-    b2Transform transform = b2Body_GetTransform(deadSoldier->body);
-    b2Polygon poly = b2Shape_GetPolygon(deadSoldier->spearTipShapeId);
-
-    // Scale factor to expand the vertices outward
-    const float expansionFactor = 1.1f;
-
-    // Expand each vertex outward from the polygon's centroid
-    for (int i = 0; i < poly.count; i++) {
-        b2Vec2 direction = { poly.vertices[i].x - poly.centroid.x, poly.vertices[i].y - poly.centroid.y };
-        poly.vertices[i].x += direction.x * (expansionFactor - 1.0f);
-        poly.vertices[i].y += direction.y * (expansionFactor - 1.0f);
-    }
-
-    // Run the overlap query with the expanded polygon
-    b2World_OverlapPolygon(world, &poly, transform, filter, ResidualTouchCallback, (void*)deadSoldier);
 }
 

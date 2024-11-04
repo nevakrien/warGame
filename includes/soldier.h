@@ -38,16 +38,16 @@ static inline bool Soldier_IsAlive(Soldier* soldier){
     // return !B2_ID_EQUALS(soldier->body,b2_nullBodyId);
 }
 
-void handle_residual_touch(Soldier* deadSoldier,b2WorldId world);
+// void handle_residual_touch(Soldier* deadSoldier,b2WorldId world);
 
 static inline void Soldier_Die(Soldier* soldier,b2WorldId world){
     // b2DestroyBody(soldier->body);
     b2Body_Disable  (soldier->body);
     // soldier->body = b2_nullBodyId;
     soldier->health = NAN;//make sure we wont triger health check again.
-    if(soldier->hasHitTarget){
-        handle_residual_touch(soldier,world);
-    }
+    // if(soldier->hasHitTarget){
+    //     handle_residual_touch(soldier,world);
+    // }
 }
 
 static inline void moveSoldier(Soldier* src,Soldier* dest){

@@ -1,8 +1,8 @@
 # Compiler
 # CC = $(shell which gcc-14 || echo gcc) # Prefer gcc-14 if available
 # Compilers
-CC =gcc-openmp -fopenmp 
-CXX = g++-openmp -fopenmp 
+CC =gcc-14#-openmp -fopenmp 
+CXX = g++-14#-openmp -fopenmp 
 CFLAGS = -g3 -Wall -lstdc++ -Wextra
 CXXFLAGS = $(CFLAGS) -fpermissive  # C++ standard can be adjusted as needed
 
