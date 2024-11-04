@@ -308,13 +308,13 @@ int main() {
 
     while (!WindowShouldClose()) {
         // Camera controls
-        if (IsKeyDown(KEY_RIGHT)) camera.target.x += 10;
-        if (IsKeyDown(KEY_LEFT)) camera.target.x -= 10;
-        if (IsKeyDown(KEY_DOWN)) camera.target.y += 10;
-        if (IsKeyDown(KEY_UP)) camera.target.y -= 10;
+        if (IsKeyDown(KEY_RIGHT)) camera.target.x += 10/camera.zoom;
+        if (IsKeyDown(KEY_LEFT)) camera.target.x -= 10/camera.zoom;
+        if (IsKeyDown(KEY_DOWN)) camera.target.y += 10/camera.zoom;
+        if (IsKeyDown(KEY_UP)) camera.target.y -= 10/camera.zoom;
         if (IsKeyDown(KEY_W)) camera.zoom += 0.05f * camera.zoom;
         if (IsKeyDown(KEY_S)) camera.zoom -= 0.05f * camera.zoom;
-        if (camera.zoom < 0.1f) camera.zoom = 0.1f;
+        if (camera.zoom < 0.00001f) camera.zoom = 0.00001f;
 
         // Parallelized soldier updates
         UpdateAllSoldiers(soldiers, NUM_SOLDIERS_TEAM1 + NUM_SOLDIERS_TEAM2, &team1,&team2);
@@ -330,9 +330,12 @@ int main() {
         DrawCircleV(BASE_TEAM1, 15, DARKGRAY);
         DrawCircleV(BASE_TEAM2, 15, BLUE);
 
-        // Render soldiers
         for (int i = 0; i < NUM_SOLDIERS_TEAM1 + NUM_SOLDIERS_TEAM2; i++) {
             Soldier_RenderDead(&soldiers[i]);
+        }
+
+        // Render soldiers
+        for (int i = 0; i < NUM_SOLDIERS_TEAM1 + NUM_SOLDIERS_TEAM2; i++) {
             Soldier_RenderAlive(&soldiers[i]);
             Soldier_FrameReset(&soldiers[i]);
         }
