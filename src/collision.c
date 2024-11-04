@@ -6,8 +6,8 @@
 #include <assert.h>
 
 
-// Define the minimum speed threshold for triggering a hit
-#define HIT_SPEED_THRESHOLD 1.0f
+// // Define the minimum speed threshold for triggering a hit
+// #define HIT_SPEED_THRESHOLD 1.0f
 
 
 // Inline function to handle begin contact events with detailed logging
@@ -26,10 +26,10 @@ static inline void handleHitContacts(b2ContactEvents contactEvents) {
         b2ShapeId shapeA = hitEvent->shapeIdA;
         b2ShapeId shapeB = hitEvent->shapeIdB;
 
-        // Check if the approach speed is high enough to trigger a hit
-        if (hitEvent->approachSpeed < HIT_SPEED_THRESHOLD) {
-            continue;  // Skip this hit event if the speed is too low
-        }
+        // // Check if the approach speed is high enough to trigger a hit
+        // if (hitEvent->approachSpeed < HIT_SPEED_THRESHOLD) {
+        //     continue;  // Skip this hit event if the speed is too low
+        // }
 
         b2BodyId bodyA = b2Shape_GetBody(shapeA);
         b2BodyId bodyB = b2Shape_GetBody(shapeB);
