@@ -12,15 +12,15 @@
 #include "team.h"
 #include "soldier.h"
 
-#define NUM_SOLDIERS_TEAM1 2400
-#define NUM_SOLDIERS_TEAM2 1600
+#define NUM_SOLDIERS_TEAM1 12//2400
+#define NUM_SOLDIERS_TEAM2 8//1600
 #define SPEED 10.0f
 #define SOLDIER_SPACING 40.0f
 #define STARTING_HEALTH 100.0f
 #define LOW_HEALTH_THRESHOLD 20.0f
 #define ROTATION_SPEED_CAP 2.0f  // Max angular velocity to limit physical rotation speed
 #define ATTACK_ANGLE_THRESHOLD 0.1f // Angle within which a soldier can attack
-#define ANGLE_DIFF_THRESHOLD 0.01f  // Angle difference at which to stop further rotation
+//#define ANGLE_DIFF_THRESHOLD 0.01f  // Angle difference at which to stop further rotation
 
 const Vector2 BASE_TEAM1 = { 200.0f, 300.0f };
 const Vector2 BASE_TEAM2 = { 600.0f, 300.0f };
@@ -53,11 +53,7 @@ void UpdateSoldier(Soldier* soldier, Soldier* closestEnemy) {
     float angleToEnemy = CalculateAngle(soldierPos, enemyPos);
     float targetAngle = angleToEnemy - PI / 2;  // Offset by -90 degrees to present the front
 
-    // Wrap the target angle within [-PI, PI] for consistent rotation direction
-    if (targetAngle > PI) targetAngle -= 2 * PI;
-    if (targetAngle < -PI) targetAngle += 2 * PI;
-
-    // Get the current angle from the transform's sine and cosine components
+    // Get the current angle from the soldier's transform
     b2Transform transform = b2Body_GetTransform(soldier->body);
     float currentAngle = atan2f(transform.q.s, transform.q.c);
 
@@ -66,21 +62,17 @@ void UpdateSoldier(Soldier* soldier, Soldier* closestEnemy) {
     if (angleDiff > PI) angleDiff -= 2 * PI;
     if (angleDiff < -PI) angleDiff += 2 * PI;
 
-    // Rotate smoothly towards the target angle
-    if (fabsf(angleDiff) > ANGLE_DIFF_THRESHOLD) {
-        // Set angular velocity proportionally, capped by ROTATION_SPEED_CAP
-        float angularVelocity = fminf(ROTATION_SPEED_CAP, fabsf(angleDiff)) * (angleDiff > 0 ? 1 : -1);
-        b2Body_SetAngularVelocity(soldier->body, angularVelocity);
-    } else {
-        // Stop rotation if within the angle threshold
-        b2Body_SetAngularVelocity(soldier->body, 0.0f);
-    }
+    // Smooth rotation: proportional to angle difference, with a cap on angular velocity
+    float angularVelocity = fminf(ROTATION_SPEED_CAP, fabsf(angleDiff)) * (angleDiff > 0 ? 1 : -1);
+    b2Body_SetAngularVelocity(soldier->body, angularVelocity);
 
     // Only move if front side is facing the target within ATTACK_ANGLE_THRESHOLD
     if (fabsf(angleDiff) < ATTACK_ANGLE_THRESHOLD) {
         float distance = b2Distance(soldierPos, enemyPos);
-        b2Vec2 velocity = (b2Vec2){ (enemyPos.x - soldierPos.x) * SPEED / distance,
-                                    (enemyPos.y - soldierPos.y) * SPEED / distance };
+        b2Vec2 velocity = (b2Vec2){
+            (enemyPos.x - soldierPos.x) * SPEED / distance,
+            (enemyPos.y - soldierPos.y) * SPEED / distance
+        };
         b2Body_SetLinearVelocity(soldier->body, velocity);
     } else {
         // Stop if not facing the target correctly
@@ -88,139 +80,7 @@ void UpdateSoldier(Soldier* soldier, Soldier* closestEnemy) {
     }
 }
 
-//old simple version
-// void UpdateAllSoldiers(Soldier soldiers[], int numSoldiers) { //,Team* team1,Team* team2)
-//     #pragma omp parallel for
-//     for (int i = 0; i < numSoldiers; i++) {
-//         Soldier* soldier = &soldiers[i];
-//         if (!Soldier_IsAlive(soldier)) continue;
 
-//         Soldier* closestEnemy = NULL;
-//         float closestDistance = FLT_MAX;
-//         b2Vec2 soldierPos = b2Body_GetPosition(soldier->body);
-
-//         #pragma omp parallel for reduction(min:closestDistance)
-//         for (int j = 0; j < numSoldiers; j++) {
-//             if (soldiers[j].team != soldier->team && Soldier_IsAlive(&soldiers[j])) {
-//                 float distance = b2Distance(soldierPos, b2Body_GetPosition(soldiers[j].body));
-//                 if (distance < closestDistance) {
-//                     closestDistance = distance;
-//                     closestEnemy = &soldiers[j];
-//                 }
-//             }
-//         }
-
-//         if (closestEnemy) {
-//             UpdateSoldier(soldier, closestEnemy);
-//         }
-//     }
-// }
-
-// #define MEDIUM_RADIUS 60.0f
-// #define LARGE_RADIUS 200.0f
-
-// // Helper struct for the overlap callback to store the closest enemy found
-// typedef struct {
-//     Soldier* soldier;
-//     Soldier* closestEnemy;
-//     float closestDistance;
-// } OverlapContext;
-
-// // Callback function for overlap query to find the closest enemy within a radius
-// static bool OverlapCallback(b2ShapeId shapeId, void* context) {
-//     OverlapContext* overlapContext = (OverlapContext*)context;
-//     Soldier* soldier = overlapContext->soldier;
-//     b2Vec2 soldierPos = b2Body_GetPosition(soldier->body);
-
-//     b2BodyId bodyId = b2Shape_GetBody(shapeId);
-//     void* userData = b2Body_GetUserData(bodyId);
-
-//     if (userData) {
-//         Soldier* potentialEnemy = (Soldier*)userData;
-
-//         // Check if the potential enemy is from an opposing team and is alive
-//         if (potentialEnemy->team != soldier->team && Soldier_IsAlive(potentialEnemy)) {
-//             b2Vec2 enemyPos = b2Body_GetPosition(potentialEnemy->body);
-//             float distance = b2Distance(soldierPos, enemyPos);
-
-//             // Update closest enemy if this one is closer
-//             if (distance < overlapContext->closestDistance) {
-//                 overlapContext->closestDistance = distance;
-//                 overlapContext->closestEnemy = potentialEnemy;
-//             }
-//         }
-//     }
-//     return true;  // Continue the query for all shapes in range
-// }
-
-// // Perform an overlap search within a specified radius
-// static void FindClosestEnemyInRadius(b2WorldId world, Soldier* soldier, OverlapContext* context, float radius) {
-//     b2Vec2 soldierPos = b2Body_GetPosition(soldier->body);
-//     b2Circle circle = { soldierPos, radius };
-//     b2QueryFilter filter = b2DefaultQueryFilter();
-//     b2World_OverlapCircle(world, &circle, b2Transform_identity, filter, OverlapCallback, context);
-// }
-
-// // Fallback to a full loop over all soldiers to find the closest enemy if no nearby enemies found
-// static void FindClosestEnemyInFullLoop(Soldier soldiers[], int numSoldiers, Soldier* soldier, OverlapContext* context) {
-//     b2Vec2 soldierPos = b2Body_GetPosition(soldier->body);
-    
-//     for (int j = 0; j < numSoldiers; j++) {
-//         Soldier* potentialEnemy = &soldiers[j];
-//         if (potentialEnemy->team != soldier->team && Soldier_IsAlive(potentialEnemy)) {
-//             b2Vec2 enemyPos = b2Body_GetPosition(potentialEnemy->body);
-//             float distance = b2Distance(soldierPos, enemyPos);
-
-//             // Update closest enemy if this one is closer
-//             if (distance < context->closestDistance) {
-//                 context->closestDistance = distance;
-//                 context->closestEnemy = potentialEnemy;
-//             }
-//         }
-//     }
-// }
-
-// // Main function to find the closest enemy for a soldier
-// static Soldier* FindClosestEnemy(Soldier soldiers[], int numSoldiers, b2WorldId world, Soldier* soldier) {
-//     OverlapContext context = {
-//         .soldier = soldier,
-//         .closestEnemy = NULL,
-//         .closestDistance = FLT_MAX
-//     };
-
-//     // Attempt to find an enemy within MEDIUM_RADIUS
-//     FindClosestEnemyInRadius(world, soldier, &context, MEDIUM_RADIUS);
-
-//     // Fallback: Full loop over all soldiers if no enemy was found within MEDIUM_RADIUS
-//     if (!context.closestEnemy) {
-//         FindClosestEnemyInRadius(world, soldier, &context, LARGE_RADIUS);
-//     }
-
-//     // Fallback: Full loop over all soldiers if no enemy was found within MEDIUM_RADIUS
-//     if (!context.closestEnemy) {
-//         FindClosestEnemyInFullLoop(soldiers, numSoldiers, soldier, &context);
-//     }
-
-//     return context.closestEnemy;
-// }
-
-
-// // Main function to update all soldiers using the multi-radius and fallback approach
-// void UpdateAllSoldiers(Soldier soldiers[], int numSoldiers, b2WorldId world) {
-//     #pragma omp parallel for
-//     for (int i = 0; i < numSoldiers; i++) {
-//         Soldier* soldier = &soldiers[i];
-//         if (Soldier_IsAlive(soldier)) {
-//             Soldier* closestEnemy = FindClosestEnemy(soldiers, numSoldiers, world, soldier);
-//             if (closestEnemy) {
-//                 UpdateSoldier(soldier, closestEnemy);
-//             } else {
-//                 printf("no enemies\n");
-//                 exit(1);
-//             }
-//         }
-//     }
-// }
 
 #include "knn_api.h"
 

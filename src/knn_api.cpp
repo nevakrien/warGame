@@ -1,3 +1,8 @@
+/*
+This code was made by chatgpt and is therefore probably bad
+however since it seems to work there is probably no real need to fix it as if now.
+note that we
+*/
 #include <vector>
 #include <cmath>
 #include <cstddef>
@@ -62,20 +67,30 @@ void knn_build_tree(KNN_Tree* tree) {
 
 // Find the nearest neighbor to a given (x, y) point
 int knn_find_nearest(KNN_Tree* tree, float x, float y, size_t* nearest_id, float* distance) {
-    if (!tree->tree_built) return -1; // Return error if tree is not built
+    if (!tree->tree_built) return 1; // Return error if tree is not built
+    if (tree->cloud.pts.empty()) return 2; // Return error if the tree is empty
 
     float query_pt[2] = {x, y};
     nanoflann::KNNResultSet<float> resultSet(1);
-    size_t nearest_index;
+    size_t nearest_index = -1; // Initialize with an invalid index
     resultSet.init(&nearest_index, distance);
 
-    tree->tree->findNeighbors(resultSet, query_pt, nanoflann::SearchParams(10));
+    if (!tree->tree->findNeighbors(resultSet, query_pt, nanoflann::SearchParams(10))) {
+        // If no neighbor is found, return an error code
+        return 3;
+    }
+
+    // Ensure nearest_index is valid
+    if (nearest_index == static_cast<size_t>(-1) || nearest_index >= tree->cloud.pts.size()) {
+        return 3; // Return error if no valid neighbor was found
+    }
 
     // Retrieve the ID of the nearest point
     *nearest_id = tree->cloud.pts[nearest_index].id;
     *distance = std::sqrt(*distance); // Return actual Euclidean distance
     return 0; // Success
 }
+
 
 // Free the KDTree
 void knn_free_tree(KNN_Tree* tree) {
