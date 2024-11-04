@@ -15,6 +15,7 @@
 #define NUM_SOLDIERS_TEAM1 2400
 #define NUM_SOLDIERS_TEAM2 1600
 #define SPEED 15.0f
+#define IMPULSE_POWER 100.0f
 #define SOLDIER_SPACING 40.0f
 #define STARTING_HEALTH 100.0f
 #define LOW_HEALTH_THRESHOLD 20.0f
@@ -45,6 +46,25 @@ float CalculateAngle(b2Vec2 from, b2Vec2 to) {
     return atan2f(to.y - from.y, to.x - from.x);
 }
 
+void CapSpeed(b2BodyId body, float maxSpeed) {
+    // Get the current linear velocity
+    b2Vec2 velocity = b2Body_GetLinearVelocity(body);
+
+    // Calculate the speed (magnitude of the velocity vector)
+    float speed = sqrtf(velocity.x*velocity.x+velocity.y*velocity.y);
+
+    // If the speed exceeds maxSpeed, scale it down to maxSpeed
+    if (speed > maxSpeed) {
+        // Scale the velocity to match maxSpeed
+        float scaleFactor = maxSpeed / speed;
+        velocity.x *= scaleFactor;
+        velocity.y *= scaleFactor;
+        
+        // Set the adjusted velocity back to the body
+        b2Body_SetLinearVelocity(body,velocity);
+    }
+}
+
 void UpdateSoldier(Soldier* soldier, Soldier* closestEnemy) {
     b2Vec2 enemyPos = b2Body_GetPosition(closestEnemy->body);
     b2Vec2 soldierPos = b2Body_GetPosition(soldier->body);
@@ -71,21 +91,23 @@ void UpdateSoldier(Soldier* soldier, Soldier* closestEnemy) {
 
     // Smooth rotation: proportional to angle difference, with a cap on angular velocity
     float angularVelocity = fminf(ROTATION_SPEED_CAP, fabsf(angleDiff)) * (angleDiff > 0 ? 1 : -1);
+    angularVelocity = angularVelocity*0.9f+0.1f*b2Body_GetAngularVelocity(soldier->body);
     b2Body_SetAngularVelocity(soldier->body, angularVelocity);
 
+    b2Vec2 velocity;
     // Move forward only if the spear is aligned within the attack threshold
     if (fabsf(angleDiff) < ATTACK_ANGLE_THRESHOLD) {
         float distance = b2Distance(spearTipPos, enemyPos);
-        b2Vec2 velocity = {
-            (enemyPos.x - spearTipPos.x) * SPEED / distance,
-            (enemyPos.y - spearTipPos.y) * SPEED / distance
-        };
-        b2Body_SetLinearVelocity(soldier->body, velocity);
+        velocity = b2Sub(enemyPos,spearTipPos);
+        velocity = b2MulSV(SPEED / distance,velocity);
     } else {
+        velocity=(b2Vec2){ 0.0f, 0.0f };
         // Stop if the spear is not aligned correctly
-        b2Body_SetLinearVelocity(soldier->body, (b2Vec2){ 0.0f, 0.0f });
     }
+    velocity = b2Lerp(velocity,b2Body_GetLinearVelocity(soldier->body),0.01f);
+    b2Body_SetLinearVelocity(soldier->body, velocity);
 }
+
 
 // void UpdateSoldier(Soldier* soldier, Soldier* closestEnemy) {
 //     b2Vec2 enemyPos = b2Body_GetPosition(closestEnemy->body);
