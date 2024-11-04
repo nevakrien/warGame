@@ -88,7 +88,8 @@ void UpdateSoldier(Soldier* soldier, Soldier* closestEnemy) {
     }
 }
 
-// void UpdateAllSoldiers(Soldier soldiers[], int numSoldiers) {
+//old simple version
+// void UpdateAllSoldiers(Soldier soldiers[], int numSoldiers) { //,Team* team1,Team* team2)
 //     #pragma omp parallel for
 //     for (int i = 0; i < numSoldiers; i++) {
 //         Soldier* soldier = &soldiers[i];
@@ -115,110 +116,172 @@ void UpdateSoldier(Soldier* soldier, Soldier* closestEnemy) {
 //     }
 // }
 
-#define MEDIUM_RADIUS 60.0f
-#define LARGE_RADIUS 200.0f
+// #define MEDIUM_RADIUS 60.0f
+// #define LARGE_RADIUS 200.0f
 
-// Helper struct for the overlap callback to store the closest enemy found
-typedef struct {
-    Soldier* soldier;
-    Soldier* closestEnemy;
-    float closestDistance;
-} OverlapContext;
+// // Helper struct for the overlap callback to store the closest enemy found
+// typedef struct {
+//     Soldier* soldier;
+//     Soldier* closestEnemy;
+//     float closestDistance;
+// } OverlapContext;
 
-// Callback function for overlap query to find the closest enemy within a radius
-static bool OverlapCallback(b2ShapeId shapeId, void* context) {
-    OverlapContext* overlapContext = (OverlapContext*)context;
-    Soldier* soldier = overlapContext->soldier;
-    b2Vec2 soldierPos = b2Body_GetPosition(soldier->body);
+// // Callback function for overlap query to find the closest enemy within a radius
+// static bool OverlapCallback(b2ShapeId shapeId, void* context) {
+//     OverlapContext* overlapContext = (OverlapContext*)context;
+//     Soldier* soldier = overlapContext->soldier;
+//     b2Vec2 soldierPos = b2Body_GetPosition(soldier->body);
 
-    b2BodyId bodyId = b2Shape_GetBody(shapeId);
-    void* userData = b2Body_GetUserData(bodyId);
+//     b2BodyId bodyId = b2Shape_GetBody(shapeId);
+//     void* userData = b2Body_GetUserData(bodyId);
 
-    if (userData) {
-        Soldier* potentialEnemy = (Soldier*)userData;
+//     if (userData) {
+//         Soldier* potentialEnemy = (Soldier*)userData;
 
-        // Check if the potential enemy is from an opposing team and is alive
-        if (potentialEnemy->team != soldier->team && Soldier_IsAlive(potentialEnemy)) {
-            b2Vec2 enemyPos = b2Body_GetPosition(potentialEnemy->body);
-            float distance = b2Distance(soldierPos, enemyPos);
+//         // Check if the potential enemy is from an opposing team and is alive
+//         if (potentialEnemy->team != soldier->team && Soldier_IsAlive(potentialEnemy)) {
+//             b2Vec2 enemyPos = b2Body_GetPosition(potentialEnemy->body);
+//             float distance = b2Distance(soldierPos, enemyPos);
 
-            // Update closest enemy if this one is closer
-            if (distance < overlapContext->closestDistance) {
-                overlapContext->closestDistance = distance;
-                overlapContext->closestEnemy = potentialEnemy;
-            }
-        }
-    }
-    return true;  // Continue the query for all shapes in range
-}
+//             // Update closest enemy if this one is closer
+//             if (distance < overlapContext->closestDistance) {
+//                 overlapContext->closestDistance = distance;
+//                 overlapContext->closestEnemy = potentialEnemy;
+//             }
+//         }
+//     }
+//     return true;  // Continue the query for all shapes in range
+// }
 
-// Perform an overlap search within a specified radius
-static void FindClosestEnemyInRadius(b2WorldId world, Soldier* soldier, OverlapContext* context, float radius) {
-    b2Vec2 soldierPos = b2Body_GetPosition(soldier->body);
-    b2Circle circle = { soldierPos, radius };
-    b2QueryFilter filter = b2DefaultQueryFilter();
-    b2World_OverlapCircle(world, &circle, b2Transform_identity, filter, OverlapCallback, context);
-}
+// // Perform an overlap search within a specified radius
+// static void FindClosestEnemyInRadius(b2WorldId world, Soldier* soldier, OverlapContext* context, float radius) {
+//     b2Vec2 soldierPos = b2Body_GetPosition(soldier->body);
+//     b2Circle circle = { soldierPos, radius };
+//     b2QueryFilter filter = b2DefaultQueryFilter();
+//     b2World_OverlapCircle(world, &circle, b2Transform_identity, filter, OverlapCallback, context);
+// }
 
-// Fallback to a full loop over all soldiers to find the closest enemy if no nearby enemies found
-static void FindClosestEnemyInFullLoop(Soldier soldiers[], int numSoldiers, Soldier* soldier, OverlapContext* context) {
-    b2Vec2 soldierPos = b2Body_GetPosition(soldier->body);
+// // Fallback to a full loop over all soldiers to find the closest enemy if no nearby enemies found
+// static void FindClosestEnemyInFullLoop(Soldier soldiers[], int numSoldiers, Soldier* soldier, OverlapContext* context) {
+//     b2Vec2 soldierPos = b2Body_GetPosition(soldier->body);
     
-    for (int j = 0; j < numSoldiers; j++) {
-        Soldier* potentialEnemy = &soldiers[j];
-        if (potentialEnemy->team != soldier->team && Soldier_IsAlive(potentialEnemy)) {
-            b2Vec2 enemyPos = b2Body_GetPosition(potentialEnemy->body);
-            float distance = b2Distance(soldierPos, enemyPos);
+//     for (int j = 0; j < numSoldiers; j++) {
+//         Soldier* potentialEnemy = &soldiers[j];
+//         if (potentialEnemy->team != soldier->team && Soldier_IsAlive(potentialEnemy)) {
+//             b2Vec2 enemyPos = b2Body_GetPosition(potentialEnemy->body);
+//             float distance = b2Distance(soldierPos, enemyPos);
 
-            // Update closest enemy if this one is closer
-            if (distance < context->closestDistance) {
-                context->closestDistance = distance;
-                context->closestEnemy = potentialEnemy;
-            }
-        }
-    }
-}
+//             // Update closest enemy if this one is closer
+//             if (distance < context->closestDistance) {
+//                 context->closestDistance = distance;
+//                 context->closestEnemy = potentialEnemy;
+//             }
+//         }
+//     }
+// }
 
-// Main function to find the closest enemy for a soldier
-static Soldier* FindClosestEnemy(Soldier soldiers[], int numSoldiers, b2WorldId world, Soldier* soldier) {
-    OverlapContext context = {
-        .soldier = soldier,
-        .closestEnemy = NULL,
-        .closestDistance = FLT_MAX
-    };
+// // Main function to find the closest enemy for a soldier
+// static Soldier* FindClosestEnemy(Soldier soldiers[], int numSoldiers, b2WorldId world, Soldier* soldier) {
+//     OverlapContext context = {
+//         .soldier = soldier,
+//         .closestEnemy = NULL,
+//         .closestDistance = FLT_MAX
+//     };
 
-    // Attempt to find an enemy within MEDIUM_RADIUS
-    FindClosestEnemyInRadius(world, soldier, &context, MEDIUM_RADIUS);
+//     // Attempt to find an enemy within MEDIUM_RADIUS
+//     FindClosestEnemyInRadius(world, soldier, &context, MEDIUM_RADIUS);
 
-    // Fallback: Full loop over all soldiers if no enemy was found within MEDIUM_RADIUS
-    if (!context.closestEnemy) {
-        FindClosestEnemyInRadius(world, soldier, &context, LARGE_RADIUS);
-    }
+//     // Fallback: Full loop over all soldiers if no enemy was found within MEDIUM_RADIUS
+//     if (!context.closestEnemy) {
+//         FindClosestEnemyInRadius(world, soldier, &context, LARGE_RADIUS);
+//     }
 
-    // Fallback: Full loop over all soldiers if no enemy was found within MEDIUM_RADIUS
-    if (!context.closestEnemy) {
-        FindClosestEnemyInFullLoop(soldiers, numSoldiers, soldier, &context);
-    }
+//     // Fallback: Full loop over all soldiers if no enemy was found within MEDIUM_RADIUS
+//     if (!context.closestEnemy) {
+//         FindClosestEnemyInFullLoop(soldiers, numSoldiers, soldier, &context);
+//     }
 
-    return context.closestEnemy;
-}
+//     return context.closestEnemy;
+// }
 
 
-// Main function to update all soldiers using the multi-radius and fallback approach
-void UpdateAllSoldiers(Soldier soldiers[], int numSoldiers, b2WorldId world) {
-    #pragma omp parallel for
+// // Main function to update all soldiers using the multi-radius and fallback approach
+// void UpdateAllSoldiers(Soldier soldiers[], int numSoldiers, b2WorldId world) {
+//     #pragma omp parallel for
+//     for (int i = 0; i < numSoldiers; i++) {
+//         Soldier* soldier = &soldiers[i];
+//         if (Soldier_IsAlive(soldier)) {
+//             Soldier* closestEnemy = FindClosestEnemy(soldiers, numSoldiers, world, soldier);
+//             if (closestEnemy) {
+//                 UpdateSoldier(soldier, closestEnemy);
+//             } else {
+//                 printf("no enemies\n");
+//                 exit(1);
+//             }
+//         }
+//     }
+// }
+
+#include "knn_api.h"
+
+// Assuming the necessary headers and Soldier structure definitions are provided
+
+void UpdateAllSoldiers(Soldier soldiers[], int numSoldiers, Team* team1, Team* team2) {
+    // Create KD-trees for each team
+    KNN_Tree* team1_tree = knn_create_tree(numSoldiers);
+    KNN_Tree* team2_tree = knn_create_tree(numSoldiers);
+
+    // Populate the KD-trees with soldier positions and their IDs
     for (int i = 0; i < numSoldiers; i++) {
         Soldier* soldier = &soldiers[i];
         if (Soldier_IsAlive(soldier)) {
-            Soldier* closestEnemy = FindClosestEnemy(soldiers, numSoldiers, world, soldier);
-            if (closestEnemy) {
-                UpdateSoldier(soldier, closestEnemy);
+            b2Vec2 pos = b2Body_GetPosition(soldier->body);
+            if (soldier->team == team1) {
+                knn_insert_point(team1_tree, pos.x, pos.y, i);
+            } else if (soldier->team == team2) {
+                knn_insert_point(team2_tree, pos.x, pos.y, i);
             } else {
-                printf("no enemies\n");
+                printf("non existent team\n");
                 exit(1);
             }
         }
     }
+
+    // Build the KD-trees after inserting all points
+    knn_build_tree(team1_tree);
+    knn_build_tree(team2_tree);
+
+    // Process each soldier to find the nearest enemy and update
+    #pragma omp parallel for
+    for (int i = 0; i < numSoldiers; i++) {
+        Soldier* soldier = &soldiers[i];
+        if (!Soldier_IsAlive(soldier)) continue;
+
+        Soldier* closestEnemy = NULL;
+        float closestDistance = FLT_MAX;
+        b2Vec2 soldierPos = b2Body_GetPosition(soldier->body);
+
+        // Choose the opposing team's KD-tree to search in
+        KNN_Tree* enemy_tree = (soldier->team == team1) ? team2_tree : team1_tree;
+
+        size_t nearest_id;
+        float distance;
+
+        // Query the nearest enemy in the opposing KD-tree
+        if (knn_find_nearest(enemy_tree, soldierPos.x, soldierPos.y, &nearest_id, &distance) == 0) {
+            closestEnemy = &soldiers[nearest_id];
+            closestDistance = distance;
+        }
+
+        // Update soldier based on the closest enemy
+        if (closestEnemy) {
+            UpdateSoldier(soldier, closestEnemy);
+        }
+    }
+
+    // Free both KD-trees after use
+    knn_free_tree(team1_tree);
+    knn_free_tree(team2_tree);
 }
 
 
@@ -254,7 +317,7 @@ int main() {
         if (camera.zoom < 0.1f) camera.zoom = 0.1f;
 
         // Parallelized soldier updates
-        UpdateAllSoldiers(soldiers, NUM_SOLDIERS_TEAM1 + NUM_SOLDIERS_TEAM2, world);
+        UpdateAllSoldiers(soldiers, NUM_SOLDIERS_TEAM1 + NUM_SOLDIERS_TEAM2, &team1,&team2);
 
         b2World_Step(world, 1.0f / 60.0f, 1);
         handleContacts(world);

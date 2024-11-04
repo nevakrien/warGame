@@ -1,33 +1,49 @@
 # Compiler
 # CC = $(shell which gcc-14 || echo gcc) # Prefer gcc-14 if available
-CC = gcc-openmp -fopenmp
-CFLAGS = -g3 -Wall -Wextra # -fno-strict-aliasing
+# Compilers
+CC =gcc-openmp -fopenmp
+CXX = g++-openmp -fopenmp
+CFLAGS = -g3 -Wall -lstdc++ -Wextra
+CXXFLAGS = $(CFLAGS) -fpermissive  # C++ standard can be adjusted as needed
 
 # Directories
 SRC_DIR = src
 OBJ_DIR = obj
 TARGET_DIR = targets
 BOX2D = ~/repo_packages/box2d
-INCLUDES = -I $(BOX2D)/include -I includes
+INCLUDES = -I $(BOX2D)/include -I includes 
 LIBS = -L $(BOX2D)/build/src -lbox2d -lraylib -lm -pthread -ldl -lrt -lX11
 
 # Source and object files
-# SRCS = $(wildcard $(SRC_DIR)/*.c)
-OBJS = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(wildcard $(SRC_DIR)/*.c))
+C_SRCS = $(wildcard $(SRC_DIR)/*.c)
+CPP_SRCS = $(wildcard $(SRC_DIR)/*.cpp)
+C_OBJS = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(C_SRCS))
+CPP_OBJS = $(patsubst $(SRC_DIR)/%.cpp, $(OBJ_DIR)/%.o, $(CPP_SRCS))
+OBJS = $(C_OBJS) $(CPP_OBJS)
 
-# Target executable in the root directory with .out postfix
-TARGETS = $(patsubst $(TARGET_DIR)/%.c, %.out, $(wildcard $(TARGET_DIR)/*.c))
+# Target executables might be in C or C++, adjust suffix matching accordingly
+C_TARGETS = $(patsubst $(TARGET_DIR)/%.c, %.out, $(wildcard $(TARGET_DIR)/*.c))
+CPP_TARGETS = $(patsubst $(TARGET_DIR)/%.cpp, %.out, $(wildcard $(TARGET_DIR)/*.cpp))
+TARGETS = $(C_TARGETS) $(CPP_TARGETS)
 
 # Default target
 all: $(TARGETS)
 
-# Link each target executable
-%.out: $(OBJS) $(TARGET_DIR)/%.c
+# Link each C target executable
+$(C_TARGETS): %.out: $(OBJS) $(TARGET_DIR)/%.c
 	$(CC) $(CFLAGS) $(OBJS) $(TARGET_DIR)/$*.c -o $@ $(INCLUDES) $(LIBS)
 
-# Compile each source file to an object file
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | $(OBJ_DIR)
+# Link each C++ target executable
+$(CPP_TARGETS): %.out: $(OBJS) $(TARGET_DIR)/%.cpp
+	$(CXX) $(CXXFLAGS) $(OBJS) $(TARGET_DIR)/$*.cpp -o $@ $(INCLUDES) $(LIBS)
+
+# Compile each C source file to an object file
+$(C_OBJS): $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | $(OBJ_DIR)
 	$(CC) $(CFLAGS) -c $< -o $@ $(INCLUDES)
+
+# Compile each C++ source file to an object file
+$(CPP_OBJS): $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp | $(OBJ_DIR)
+	$(CXX) $(CXXFLAGS) -c $< -o $@ $(INCLUDES)
 
 # Create object directory if it doesn't exist
 $(OBJ_DIR):
