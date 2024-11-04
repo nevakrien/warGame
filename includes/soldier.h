@@ -3,8 +3,9 @@
 
 #include <raylib.h>
 #include <box2d/box2d.h>
-#include "collision.h"
+#include "id.h"
 #include "team.h"
+#include <stdatomic.h>
 
 #define SOLDIER_RADIUS 10.0f
 #define SOLDIER_SPEAR_LENGTH 25.0f
@@ -22,7 +23,7 @@ typedef struct {
     
     bool isHit;                   // Flag indicating if the soldier has been hit
     bool hasHitTarget;            // Flag indicating if the soldier's spear has hit a target
-    int numTouch;
+    atomic_int numTouch;
 
     float health;
 } Soldier;

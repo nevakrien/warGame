@@ -186,6 +186,7 @@ void Soldier_RenderDead(Soldier* soldier){
 void Soldier_FrameReset(Soldier* soldier){
     soldier->isHit = false;
     soldier->hasHitTarget = false;
+    soldier->numTouch=0; //anoyingly we cant keep acurate track so because of the disable part
 
     soldier->health-=soldier->numTouch * TOUCH_HP_MUL;
 

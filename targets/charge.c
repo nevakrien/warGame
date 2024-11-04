@@ -226,6 +226,7 @@ int main() {
 
         b2World_Step(world, 1.0f / 60.0f, 1);
         handleContacts(world);
+        handleTouch(world,soldiers,NUM_SOLDIERS_TEAM1 + NUM_SOLDIERS_TEAM2);
 
         BeginDrawing();
         ClearBackground(RAYWHITE);
