@@ -5,7 +5,7 @@
 
 #include "soldier.h"
 
-
+#define TOUCH_HP_MUL 0.05f
 
 // Helper function to initialize the soldier's shapes
 static void Soldier_Init_Phisics(Soldier *soldier, b2WorldId world, Vector2 position, float rotation) {
@@ -26,7 +26,7 @@ static void Soldier_Init_Phisics(Soldier *soldier, b2WorldId world, Vector2 posi
     shapeDef.density = 1.0f;
     shapeDef.friction = 0.0f;
     shapeDef.restitution = 0.0f;
-    shapeDef.enableContactEvents = false;
+    shapeDef.enableContactEvents = true;
     shapeDef.enableHitEvents = true;
 
     // Create the body shape and store the shape ID
@@ -69,6 +69,7 @@ void Soldier_Init(Soldier* soldier,b2WorldId world, Vector2 position, float rota
     soldier->id=TYPE_SOLDIER;
     Soldier_Init_Phisics(soldier, world, position, rotation);
     soldier->team = team;
+    soldier->numTouch=0;
     soldier->isHit = false;
     soldier->hasHitTarget = false;
     soldier->health=health;
@@ -94,6 +95,18 @@ static Vector2 RotatePoint(Vector2 point, Vector2 center, float s, float c) {
 }
 
 
+static inline Color AddRed(Color originalColor,float amount) {
+    // Calculate the average of each color component with red (255, 0, 0)
+    float retain = 1-amount;
+    Color blendedColor;
+    blendedColor.r = retain*originalColor.r + 255*amount;
+    blendedColor.g = retain*originalColor.g + 0 ;
+    blendedColor.b = retain*originalColor.b + 0 ;
+    blendedColor.a = originalColor.a;  // Preserve the alpha
+
+    return blendedColor;
+}
+
 
 void Soldier_RenderAlive(Soldier* soldier) {
     if(!Soldier_IsAlive(soldier)){
@@ -108,7 +121,9 @@ void Soldier_RenderAlive(Soldier* soldier) {
     // Determine the color based on the soldier's state
     Color bodyColor = soldier->team->color;
     if (soldier->isHit) {
-        bodyColor = RED;  // Change color if the soldier is hit
+        bodyColor = AddRed(bodyColor,0.5f);  // Change color if the soldier is hit
+    } else if (soldier->numTouch){
+        bodyColor = AddRed(bodyColor,0.1f);
     }
 
     // Render the soldier's body
@@ -171,6 +186,8 @@ void Soldier_RenderDead(Soldier* soldier){
 void Soldier_FrameReset(Soldier* soldier){
     soldier->isHit = false;
     soldier->hasHitTarget = false;
+
+    soldier->health-=soldier->numTouch * TOUCH_HP_MUL;
 
     if(soldier->health <= 0){
         Soldier_Die(soldier);

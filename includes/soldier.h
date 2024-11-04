@@ -22,6 +22,7 @@ typedef struct {
     
     bool isHit;                   // Flag indicating if the soldier has been hit
     bool hasHitTarget;            // Flag indicating if the soldier's spear has hit a target
+    int numTouch;
 
     float health;
 } Soldier;

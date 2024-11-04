@@ -12,8 +12,8 @@
 #include "team.h"
 #include "soldier.h"
 
-#define NUM_SOLDIERS_TEAM1 12//2400
-#define NUM_SOLDIERS_TEAM2 8//1600
+#define NUM_SOLDIERS_TEAM1 2400
+#define NUM_SOLDIERS_TEAM2 1600
 #define SPEED 10.0f
 #define SOLDIER_SPACING 40.0f
 #define STARTING_HEALTH 100.0f
@@ -77,8 +77,8 @@ void UpdateSoldier(Soldier* soldier, Soldier* closestEnemy) {
     if (fabsf(angleDiff) < ATTACK_ANGLE_THRESHOLD) {
         float distance = b2Distance(spearTipPos, enemyPos);
         b2Vec2 velocity = {
-            (enemyPos.x - soldierPos.x) * SPEED / distance,
-            (enemyPos.y - soldierPos.y) * SPEED / distance
+            (enemyPos.x - spearTipPos.x) * SPEED / distance,
+            (enemyPos.y - spearTipPos.y) * SPEED / distance
         };
         b2Body_SetLinearVelocity(soldier->body, velocity);
     } else {
@@ -86,6 +86,44 @@ void UpdateSoldier(Soldier* soldier, Soldier* closestEnemy) {
         b2Body_SetLinearVelocity(soldier->body, (b2Vec2){ 0.0f, 0.0f });
     }
 }
+
+// void UpdateSoldier(Soldier* soldier, Soldier* closestEnemy) {
+//     b2Vec2 enemyPos = b2Body_GetPosition(closestEnemy->body);
+//     b2Vec2 soldierPos = b2Body_GetPosition(soldier->body);
+//     b2Transform transform = b2Body_GetTransform(soldier->body);
+
+//     //should be span with the transform
+//     // b2Vec2 spearEnd = { soldierPos.x SOLDIER_HAND_OFFSET,soldierPos.y+SOLDIER_SPEAR_LENGTH };  // Pointing upwards in the Y direction
+
+//     // Calculate the angle to align the front side of the soldier towards the enemy
+//     float angleToEnemy = CalculateAngle(soldierPos, enemyPos);
+//     float targetAngle = angleToEnemy - PI / 2;  // Offset by -90 degrees to present the front
+
+//     // Get the current angle from the soldier's transform
+//     float currentAngle = atan2f(transform.q.s, transform.q.c);
+
+//     // Calculate the angle difference and wrap it within [-PI, PI]
+//     float angleDiff = targetAngle - currentAngle;
+//     if (angleDiff > PI) angleDiff -= 2 * PI;
+//     if (angleDiff < -PI) angleDiff += 2 * PI;
+
+//     // Smooth rotation: proportional to angle difference, with a cap on angular velocity
+//     float angularVelocity = fminf(ROTATION_SPEED_CAP, fabsf(angleDiff)) * (angleDiff > 0 ? 1 : -1);
+//     b2Body_SetAngularVelocity(soldier->body, angularVelocity);
+
+//     // Only move if front side is facing the target within ATTACK_ANGLE_THRESHOLD
+//     if (fabsf(angleDiff) < ATTACK_ANGLE_THRESHOLD) {
+//         float distance = b2Distance(soldierPos, enemyPos);
+//         b2Vec2 velocity = (b2Vec2){
+//             (enemyPos.x - soldierPos.x) * SPEED / distance,
+//             (enemyPos.y - soldierPos.y) * SPEED / distance
+//         };
+//         b2Body_SetLinearVelocity(soldier->body, velocity);
+//     } else {
+//         // Stop if not facing the target correctly
+//         b2Body_SetLinearVelocity(soldier->body, (b2Vec2){ 0.0f, 0.0f });
+//     }
+// }
 
 
 
