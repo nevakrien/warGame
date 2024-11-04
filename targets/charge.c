@@ -22,8 +22,8 @@
 #define ATTACK_ANGLE_THRESHOLD 0.1f // Angle within which a soldier can attack
 //#define ANGLE_DIFF_THRESHOLD 0.01f  // Angle difference at which to stop further rotation
 
-const Vector2 BASE_TEAM1 = { 200.0f, 300.0f };
-const Vector2 BASE_TEAM2 = { 600.0f, 300.0f };
+const Vector2 BASE_TEAM1 = { 300.0f, 300.0f };
+const Vector2 BASE_TEAM2 = { 500.0f, 300.0f };
 
 void InitSoldiers(Soldier soldiers[], Team* team1, Team* team2, b2WorldId world) {
     int index = 0;
@@ -48,16 +48,23 @@ float CalculateAngle(b2Vec2 from, b2Vec2 to) {
 void UpdateSoldier(Soldier* soldier, Soldier* closestEnemy) {
     b2Vec2 enemyPos = b2Body_GetPosition(closestEnemy->body);
     b2Vec2 soldierPos = b2Body_GetPosition(soldier->body);
+    b2Transform transform = b2Body_GetTransform(soldier->body);
 
-    // Calculate the angle to align the front side of the soldier towards the enemy
-    float angleToEnemy = CalculateAngle(soldierPos, enemyPos);
-    float targetAngle = angleToEnemy - PI / 2;  // Offset by -90 degrees to present the front
+    // Spear offset: adjust these values to position the spear tip correctly
+    b2Vec2 spearOffset = {
+        SOLDIER_HAND_OFFSET * transform.q.c - SOLDIER_SPEAR_LENGTH * transform.q.s,
+        SOLDIER_HAND_OFFSET * transform.q.s + SOLDIER_SPEAR_LENGTH * transform.q.c
+    };
+    b2Vec2 spearTipPos = { soldierPos.x + spearOffset.x, soldierPos.y + spearOffset.y };
+
+    // Calculate angle to align the spear tip towards the enemy
+    float angleToEnemy = CalculateAngle(spearTipPos, enemyPos);
+    float targetAngle = angleToEnemy - PI/2;
 
     // Get the current angle from the soldier's transform
-    b2Transform transform = b2Body_GetTransform(soldier->body);
     float currentAngle = atan2f(transform.q.s, transform.q.c);
 
-    // Calculate the angle difference and wrap it within [-PI, PI]
+    // Calculate the angle difference and wrap within [-PI, PI]
     float angleDiff = targetAngle - currentAngle;
     if (angleDiff > PI) angleDiff -= 2 * PI;
     if (angleDiff < -PI) angleDiff += 2 * PI;
@@ -66,16 +73,16 @@ void UpdateSoldier(Soldier* soldier, Soldier* closestEnemy) {
     float angularVelocity = fminf(ROTATION_SPEED_CAP, fabsf(angleDiff)) * (angleDiff > 0 ? 1 : -1);
     b2Body_SetAngularVelocity(soldier->body, angularVelocity);
 
-    // Only move if front side is facing the target within ATTACK_ANGLE_THRESHOLD
+    // Move forward only if the spear is aligned within the attack threshold
     if (fabsf(angleDiff) < ATTACK_ANGLE_THRESHOLD) {
-        float distance = b2Distance(soldierPos, enemyPos);
-        b2Vec2 velocity = (b2Vec2){
+        float distance = b2Distance(spearTipPos, enemyPos);
+        b2Vec2 velocity = {
             (enemyPos.x - soldierPos.x) * SPEED / distance,
             (enemyPos.y - soldierPos.y) * SPEED / distance
         };
         b2Body_SetLinearVelocity(soldier->body, velocity);
     } else {
-        // Stop if not facing the target correctly
+        // Stop if the spear is not aligned correctly
         b2Body_SetLinearVelocity(soldier->body, (b2Vec2){ 0.0f, 0.0f });
     }
 }

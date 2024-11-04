@@ -10,6 +10,7 @@
 #define SOLDIER_SPEAR_LENGTH 25.0f
 #define SOLDIER_SPEAR_TIP_SIZE 0.5f
 #define SOLDIER_SPEAR_TIP_LEN 2.0f
+#define SOLDIER_HAND_OFFSET (SOLDIER_RADIUS * 0.5f)
 
 typedef struct {
     TypeID id;

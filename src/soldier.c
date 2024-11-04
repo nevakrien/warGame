@@ -33,9 +33,8 @@ static void Soldier_Init_Phisics(Soldier *soldier, b2WorldId world, Vector2 posi
     soldier->bodyShapeId = b2CreateCircleShape(soldier->body, &shapeDef, &circleShape);
 
     // Adjusting spear start and end points: spear held on the right, pointing upwards
-    float offsetX = SOLDIER_RADIUS * 0.5f;  // Offset to move spear to the right of the circle
-    b2Vec2 spearStart = { offsetX, 0.0f };
-    b2Vec2 spearEnd = { offsetX, SOLDIER_SPEAR_LENGTH };  // Pointing upwards in the Y direction
+    b2Vec2 spearStart = { SOLDIER_HAND_OFFSET, 0.0f };
+    b2Vec2 spearEnd = { SOLDIER_HAND_OFFSET, SOLDIER_SPEAR_LENGTH };  // Pointing upwards in the Y direction
     b2Segment spearShape = { spearStart, spearEnd };
     shapeDef.density = 0.5f;
     shapeDef.enableContactEvents = false;
@@ -47,9 +46,9 @@ static void Soldier_Init_Phisics(Soldier *soldier, b2WorldId world, Vector2 posi
 
     // Polygon Shape for Spear Tip
     b2Vec2 points[] = {
-        { offsetX, SOLDIER_SPEAR_LENGTH+SOLDIER_SPEAR_TIP_LEN },  // Base of the triangle at the end of the spear
-        { offsetX - SOLDIER_SPEAR_TIP_SIZE, SOLDIER_SPEAR_LENGTH - SOLDIER_SPEAR_TIP_SIZE },
-        { offsetX + SOLDIER_SPEAR_TIP_SIZE, SOLDIER_SPEAR_LENGTH - SOLDIER_SPEAR_TIP_SIZE }
+        { SOLDIER_HAND_OFFSET, SOLDIER_SPEAR_LENGTH+SOLDIER_SPEAR_TIP_LEN },  // Base of the triangle at the end of the spear
+        { SOLDIER_HAND_OFFSET - SOLDIER_SPEAR_TIP_SIZE, SOLDIER_SPEAR_LENGTH - SOLDIER_SPEAR_TIP_SIZE },
+        { SOLDIER_HAND_OFFSET + SOLDIER_SPEAR_TIP_SIZE, SOLDIER_SPEAR_LENGTH - SOLDIER_SPEAR_TIP_SIZE }
     };
 
     b2Hull hull = b2ComputeHull(points, 3);
