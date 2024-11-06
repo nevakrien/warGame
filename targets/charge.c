@@ -12,8 +12,8 @@
 #include "team.h"
 #include "soldier.h"
 
-#define NUM_SOLDIERS_TEAM1 2400
-#define NUM_SOLDIERS_TEAM2 1600
+#define NUM_SOLDIERS_TEAM1 12//2400
+#define NUM_SOLDIERS_TEAM2 8//1600
 #define SPEED 15.0f
 #define IMPULSE_POWER 100.0f
 #define SOLDIER_SPACING 40.0f

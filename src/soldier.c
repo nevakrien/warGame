@@ -1,7 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <string.h>
+
+
 #include <box2d/box2d.h>
+
 
 #include "soldier.h"
 
@@ -69,7 +73,10 @@ void Soldier_Init(Soldier* soldier,b2WorldId world, Vector2 position, float rota
     soldier->id=TYPE_SOLDIER;
     Soldier_Init_Phisics(soldier, world, position, rotation);
     soldier->team = team;
-    // soldier->numTouch=0;
+
+    soldier->numTouch=0;
+    memset(soldier->touchingSpear,0,MAX_TOUCHING_SPEAR*sizeof(Soldier*));
+
     soldier->isHit = false;
     soldier->hasHitTarget = false;
     soldier->health=health;
@@ -122,9 +129,9 @@ void Soldier_RenderAlive(Soldier* soldier) {
     Color bodyColor = soldier->team->color;
     if (soldier->isHit) {
         bodyColor = AddRed(bodyColor,0.5f);  // Change color if the soldier is hit
-    } //else if (soldier->numTouch){
-        //bodyColor = AddRed(bodyColor,0.1f);
-    //}
+    } else if (soldier->numTouch){
+        bodyColor = AddRed(bodyColor,0.1f);
+    }
 
     // Render the soldier's body
     b2Circle circle = b2Shape_GetCircle(soldier->bodyShapeId);
@@ -186,7 +193,7 @@ void Soldier_RenderDead(Soldier* soldier){
 void Soldier_FrameReset(Soldier* soldier,b2WorldId world){    
 
     
-    // soldier->health-=soldier->numTouch * TOUCH_HP_MUL;
+    soldier->health-=soldier->numTouch * TOUCH_HP_MUL;
     // soldier->numTouch=0; //anoyingly we cant keep acurate track so because of the disable part
 
     if(soldier->health <= 0){
