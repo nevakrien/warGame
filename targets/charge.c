@@ -14,10 +14,10 @@
 
 #define NUM_SOLDIERS_TEAM1 2400
 #define NUM_SOLDIERS_TEAM2 1600
-#define SPEED 15.0f
-#define IMPULSE_POWER 100.0f
+#define SPEED 20.0f
+// #define IMPULSE_POWER 100.0f
 #define SOLDIER_SPACING 40.0f
-#define STARTING_HEALTH 100.0f
+#define STARTING_HEALTH 400.0f
 #define LOW_HEALTH_THRESHOLD 20.0f
 #define ROTATION_SPEED_CAP 2.0f  // Max angular velocity to limit physical rotation speed
 #define ATTACK_ANGLE_THRESHOLD 0.1f // Angle within which a soldier can attack
@@ -188,6 +188,9 @@ void UpdateAllSoldiers(Soldier soldiers[], int numSoldiers, Team* team1, Team* t
         float closestDistance = FLT_MAX;
         b2Vec2 soldierPos = b2Body_GetPosition(soldier->body);
 
+        // if(soldier->team == team1){
+        //     continue
+        // }
         // Choose the opposing team's KD-tree to search in
         KNN_Tree* enemy_tree = (soldier->team == team1) ? team2_tree : team1_tree;
 

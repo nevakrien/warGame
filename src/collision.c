@@ -12,49 +12,53 @@
 
 // Inline function to handle begin contact events with detailed logging
 static inline void handleBeginContacts(__attribute__((unused)) b2ContactEvents contactEvents) {
-    // for (int i = 0; i < contactEvents.beginCount; ++i) {
-    //     b2ContactBeginTouchEvent* beginEvent = contactEvents.beginEvents + i;
-    //     b2ShapeId shapeA = beginEvent->shapeIdA;
-    //     b2ShapeId shapeB = beginEvent->shapeIdB;
+    for (int i = 0; i < contactEvents.beginCount; ++i) {
+        b2ContactBeginTouchEvent* beginEvent = contactEvents.beginEvents + i;
+        b2ShapeId shapeA = beginEvent->shapeIdA;
+        b2ShapeId shapeB = beginEvent->shapeIdB;
 
-    //     b2BodyId bodyA = b2Shape_GetBody(shapeA);
-    //     b2BodyId bodyB = b2Shape_GetBody(shapeB);
+        b2BodyId bodyA = b2Shape_GetBody(shapeA);
+        b2BodyId bodyB = b2Shape_GetBody(shapeB);
 
-    //     void* userDataA = b2Body_GetUserData(bodyA);
-    //     void* userDataB = b2Body_GetUserData(bodyB);
+        void* userDataA = b2Body_GetUserData(bodyA);
+        void* userDataB = b2Body_GetUserData(bodyB);
 
-    //     if (userDataA != NULL && userDataB != NULL) {
-    //         TypeID typeA = *((TypeID*)userDataA);
-    //         TypeID typeB = *((TypeID*)userDataB);
+        if (userDataA != NULL && userDataB != NULL) {
+            TypeID typeA = *((TypeID*)userDataA);
+            TypeID typeB = *((TypeID*)userDataB);
 
-    //         if (typeA == TYPE_SOLDIER && typeB == TYPE_SOLDIER) {
-    //             Soldier* soldierA = (Soldier*)userDataA;
-    //             Soldier* soldierB = (Soldier*)userDataB;
+            if (typeA == TYPE_SOLDIER && typeB == TYPE_SOLDIER) {
+                Soldier* soldierA = (Soldier*)userDataA;
+                Soldier* soldierB = (Soldier*)userDataB;
 
-    //             if (soldierA->team == soldierB->team) {
-    //                 continue;
-    //             }
+                if (soldierA->team == soldierB->team) {
+                    continue;
+                }
 
-    //             // Check if soldier A's spear is touching soldier B's body or vice versa
-    //             bool soldierASpearTouchesSoldierB = 
-    //                 B2_ID_EQUALS(shapeA, soldierA->spearTipShapeId) && B2_ID_EQUALS(shapeB, soldierB->bodyShapeId);
-    //             bool soldierBSpearTouchesSoldierA = 
-    //                 B2_ID_EQUALS(shapeA, soldierB->spearTipShapeId) && B2_ID_EQUALS(shapeB, soldierA->bodyShapeId);
+                // Check if soldier A's spear is touching soldier B's body or vice versa
+                bool soldierASpearTouchesSoldierB = 
+                    B2_ID_EQUALS(shapeA, soldierA->spearTipShapeId) && B2_ID_EQUALS(shapeB, soldierB->bodyShapeId);
+                bool soldierBSpearTouchesSoldierA = 
+                    B2_ID_EQUALS(shapeA, soldierB->spearTipShapeId) && B2_ID_EQUALS(shapeB, soldierA->bodyShapeId);
 
-    //             if (soldierASpearTouchesSoldierB) {
-    //                 atomic_fetch_add(&(soldierB->numTouch), 1);
-    //                 // soldierB->numTouch++;  // Increase numTouch for Soldier B
-    //                 // soldierA->hasHitTarget = true;  // Soldier A's spear hit Soldier B
-    //             }
-    //             if (soldierBSpearTouchesSoldierA) {
-    //                 atomic_fetch_add(&(soldierA->numTouch), 1);
-    //                 // soldierA->numTouch++;  // Increase numTouch for Soldier A
-    //                 // soldierB->hasHitTarget = true;  // Soldier B's spear hit Soldier A
+                if (soldierASpearTouchesSoldierB) {
+                    atomic_fetch_add(&(soldierB->numTouch), 1);
+                    printf("touch\n");
 
-    //             }
-    //         }
-    //     }
-    // }
+                    // soldierB->numTouch++;  // Increase numTouch for Soldier B
+                    // soldierA->hasHitTarget = true;  // Soldier A's spear hit Soldier B
+                }
+                if (soldierBSpearTouchesSoldierA) {
+                    atomic_fetch_add(&(soldierA->numTouch), 1);
+                    printf("touch\n");
+                    
+                    // soldierA->numTouch++;  // Increase numTouch for Soldier A
+                    // soldierB->hasHitTarget = true;  // Soldier B's spear hit Soldier A
+
+                }
+            }
+        }
+    }
 }
 
 //cant make this work right because of death
